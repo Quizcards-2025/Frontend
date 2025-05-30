@@ -1,0 +1,41 @@
+// styles.scss
+$yellow-background: yellow;
+$red-color: #e73d3d;
+$blue-color: #0e22e9;
+$light-red-background: #fed2d2;
+$light-blue-background: #babefd;
+
+.wrapper {
+  position: relative;
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.box {
+  position: absolute;
+  width: 300px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30px;
+
+  &.recall {
+    left: 0;
+    color: $red-color;
+    background-color: $light-red-background;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+  }
+
+  &.remember {
+    right: 0;
+    color: darkgreen;
+    background-color: #A8E6A1;
+    border-top-left-radius: 50px;
+    border-bottom-left-radius: 50px;
+  }
+}

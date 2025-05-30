@@ -1,0 +1,97 @@
+/* Tổng quát */
+.detail-folder {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    max-width: 100%;
+    margin: auto;
+    color: #333;
+}
+
+/* Tiêu đề */
+.detail-folder-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.detail-folder-header .last-edited {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Danh sách các mục */
+.folder-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.folder-item .icon img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e0f7fa;
+}
+
+.folder-item .info {
+    padding-left: 10px;
+    font-size: 18px;
+    max-width: 300px;
+}
+
+.title-card {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    display: block;
+}
+
+.folder-item .info p {
+    font-size: 12px;
+    color: #555;
+}
+
+/* Nút hành động */
+.folder-item .actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.learn-button {
+    background-color: #0e22e9;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.menu-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #555;
+    cursor: pointer;
+}
+
+.info-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.folder-item-left {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
