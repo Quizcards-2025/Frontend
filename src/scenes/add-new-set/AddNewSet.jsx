@@ -99,7 +99,7 @@ function AddNewSet() {
                     api.get("/v1/category/list"),
                     api.get("/v1/auth/user-info"),
                     api.get("/v1/category-subscription/my-subscription"),
-                    // api.get("/v1/set/count-set"),
+                    // api.get("/v1/set/count-my-set"),
                     // api.get("/v1/set/count-set-in-current-date"),
                     api.get("/v1/set/analysis/current-user")
                 ]);

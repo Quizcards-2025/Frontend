@@ -1,13 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import {
-    Box,
-    Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton,
-    Input,
-    InputAdornment,
-    ListItem, Tooltip,
-    useMediaQuery,
-    useTheme,
-} from "@mui/material";
+import {Box, Button, Checkbox, Input, InputAdornment, ListItem, useMediaQuery, useTheme,} from "@mui/material";
 import ParallelogramOverlay from "../../components/ParallelogramOverlay/ParallelogramOverlay.jsx";
 import {Image} from "react-bootstrap";
 import {BiCheck, BiPencil, BiReset, BiXCircle} from "react-icons/bi";
@@ -25,12 +17,15 @@ import ModalConfirmIdentity from "src/components/profile/ModalConfirmIdentity.js
 import {useNavigate} from "react-router-dom";
 import ModalChangePassword from "src/components/profile/ModalChangePassword.jsx";
 import ModalConfirmLogoutAll from "src/components/profile/ModalConfirmLogoutAll.jsx";
+import {useStreakContext} from "@/context/StreakContext.jsx";
 
 
 const UserProfile = () => {
     const theme = useTheme();
     const isChangeAvatarAbosuteDisplay = useMediaQuery(theme.breakpoints.up("sm"));
     const navigate = useNavigate();
+
+    const {currentDateStreak} = useStreakContext();
 
     const [avatar, setAvatar] = useState(null); // Blob
 
@@ -64,7 +59,12 @@ const UserProfile = () => {
         gender: false,
     });
 
-    const [analysisUser, setAnalysisUser] = useState({});
+    const [analysisUser, setAnalysisUser] = useState({
+        numberSets: 0,
+        numberSetsPublic: 0,
+        numberClasses: 0,
+        numberStreakDays: 0,
+    });
 
     const handleEditingUserInfoChange = (type, value) => {
         // console.log(`Type: ${type}, Value: ${value}`);
@@ -77,10 +77,30 @@ const UserProfile = () => {
         setEditingUserInfo(resUserInfo.data);
         // console.log(resUserInfo.data);
         localStorage.setItem("user", JSON.stringify(resUserInfo.data));
+        return resUserInfo;
     };
 
     const loadAnalysisUser = async () => {
-
+        try {
+            const [resNumberOfSets,
+                resNumberSetsPublic,
+                resNumberOfClasses] = await Promise.all([
+                    api.get("/v1/set/count-my-set"),
+                    api.get("/v1/set/count-my-public-set"),
+                    api.get("/v1/my-class/count-my-classes"),
+                ]
+            );
+            setAnalysisUser((prev) => ({
+                ...prev,
+                numberSets: resNumberOfSets.data,
+                numberClasses: resNumberOfClasses.data,
+                numberSetsPublic: resNumberSetsPublic.data,
+                numberStreakDays: currentDateStreak,
+            }));
+        } catch (err) {
+            console.error(err);
+            toast.error("Error: Cannot load analysis user data.");
+        }
     };
 
     const inputRefs = useRef({
@@ -281,6 +301,7 @@ const UserProfile = () => {
 
     useEffect(() => {
         loadUserInfo().finally();
+        loadAnalysisUser().finally();
     }, []);
 
     return (
@@ -346,13 +367,16 @@ const UserProfile = () => {
                     <Box
                         className="flex flex-col sm:flex-row justify-center items-center text-[1.2rem] font-bold gap-[1rem]">
                         <Box className="rounded-[1.5rem] bg-[#E0E0FE] px-[1.2rem] py-[0.6rem]">
-                            0 public sets
+                            {analysisUser.numberSets} sets
                         </Box>
                         <Box className="rounded-[1.5rem] bg-[#E0E0FE88] px-[1.2rem] py-[0.6rem]">
-                            0 classes
+                            {analysisUser.numberSetsPublic} public sets
                         </Box>
                         <Box className="rounded-[1.5rem] bg-[#E0E0FE] px-[1.2rem] py-[0.6rem]">
-                            0 streak days
+                            {analysisUser.numberClasses} classes
+                        </Box>
+                        <Box className="rounded-[1.5rem] bg-[#E0E0FE88] px-[1.2rem] py-[0.6rem]">
+                            {analysisUser.numberStreakDays} streak days
                         </Box>
                     </Box>
                 </Box>
