@@ -68,7 +68,8 @@ function UpdateSet() {
     const [expiredAt, setExpiredAt] = useState(0);
 
     const [maxFlashcards, setMaxFlashcards] = useState(0);
-    const [isFreeUser, setIsFreeUser] = useState(true);
+    const [isNormalSubscription, setIsNormalSubscription] = useState(true);
+    const [benefits, setBenefits] = useState({});
     const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [title, setTitle] = useState("");
@@ -115,7 +116,7 @@ function UpdateSet() {
         {categoryId: 1, categoryName: 'Choose a category'},
     ]);
 
-    const handlePremiumFilter = usePremiumFilter(isFreeUser);
+    const handlePremiumFilter = usePremiumFilter(isNormalSubscription);
 
     const loadSetInfo = async (userInfo, listCategory) => {
         const resSetInfo = await api.get(`/v1/set/set-detail/${id}`);
@@ -175,7 +176,8 @@ function UpdateSet() {
             setCategories(resCategories.data);
             let userData = resUserInfo.data;
             let freeUser = canAccess(userData.role, [Roles.FREE_USER]);
-            setIsFreeUser(freeUser);
+            setIsNormalSubscription(resBenefit.data.normalSubscription);
+            setBenefits(resBenefit.data);
 
             setMaxFlashcards(resBenefit.data.maxFlashcardsPerSet ?? 0);
 
@@ -304,7 +306,7 @@ function UpdateSet() {
         setPrivacy(event.target.value === "true");
     };
 
-    const uploadImagesToCloud = async (card) => {
+    const uploadMediasToCloud = async (card) => {
         let downloadUrl = "";
         if (card.img) {
             downloadUrl = await uploadToFirebase(
@@ -328,12 +330,12 @@ function UpdateSet() {
             messageError = "Missing question or answer in card";
             isOk = false;
         }
-        if (isOk && convertHtmlToText(card.front).length > 500 ||
-            convertHtmlToText(card.back).length > 500) {
-            messageError = "Length of question or answer must be less than 500.";
+        if (isOk && convertHtmlToText(card.front).length > 800 ||
+            convertHtmlToText(card.back).length > 800) {
+            messageError = "Length of question or answer must be less than 800.";
             isOk = false;
         }
-        if (isOk && card.img && isFreeUser && card.newImg) {
+        if (isOk && card.img && benefits.canAddImage !== true && card.newImg) {
             messageError = "You cannot add set flashcard because u maybe cheating...";
             isOk = false;
         }
@@ -362,7 +364,7 @@ function UpdateSet() {
                     checkCardToAddValid(card);
                     let downloadUrl = "";
                     if (card.newImg) {
-                        downloadUrl = await uploadImagesToCloud(card);
+                        downloadUrl = await uploadMediasToCloud(card);
                     }
                     const res = await api.post("/v1/flashcards/create-new-flashcard", {
                         question: convertHtmlToText(card.front),
@@ -407,7 +409,7 @@ function UpdateSet() {
                     checkCardValid(card);
                     let downloadUrl = "";
                     if (card.newImg) {
-                        downloadUrl = await uploadImagesToCloud(card);
+                        downloadUrl = await uploadMediasToCloud(card);
                     } else {
                         downloadUrl = card.img;
                     }
@@ -662,13 +664,13 @@ function UpdateSet() {
                                 }}
                                         onClick={(e) => handlePremiumFilter(
                                             e,
-                                            !isAnonymous && isFreeUser,
+                                            !isAnonymous && benefits.isSetAnonymous !== true,
                                             () => setIsAnonymous(isAnonymous => !isAnonymous),
                                             PremiumUpgradeMessage
                                         )}>
                                     Anonymous
                                     {
-                                        !isAnonymous && isFreeUser && <LockIcon/>
+                                        !isAnonymous && benefits.isSetAnonymous !== true && <LockIcon/>
                                     }
                                 </button>
                             </div>
@@ -827,7 +829,7 @@ function UpdateSet() {
                                             id={`imageUpload-${card.id}`}
                                             accept="image/*"
                                             onClick={(e) => handlePremiumFilter(e,
-                                                isFreeUser,
+                                                benefits.canAddImage !== true,
                                                 () => {
                                                 },
                                                 PremiumUpgradeMessage
@@ -841,13 +843,13 @@ function UpdateSet() {
                                         />
                                         <ImageToggleButton
                                             hasImage={card.img}
-                                            onRemove={(e) => handlePremiumFilter(e,
-                                                isFreeUser,
-                                                () => handleImageRemove(card.id),
-                                                PremiumUpgradeMessage
-                                            )}
+                                            // onRemove={(e) => handlePremiumFilter(e,
+                                            //     isNormalSubscription,
+                                            //     () => handleImageRemove(card.id),
+                                            //     PremiumUpgradeMessage
+                                            // )}
                                             onUpload={() => document.getElementById(`imageUpload-${card.id}`).click()}
-                                            childComponent={!isFreeUser ? <></> : <LockIcon/>}
+                                            childComponent={!(benefits.canAddImage !== true) ? <></> : <LockIcon/>}
                                         />
                                     </>
                                 }

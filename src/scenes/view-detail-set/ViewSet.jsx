@@ -55,13 +55,6 @@ const ViewSet = () => {
     // const isDesktop = useMediaQuery('(min-width: 1024px)');
     const isDesktop = !isMobile;
 
-    const [replaceTermToVideo, setReplaceTermToVideo] = useState(localStorage.getItem("displayVideoInTerm") === "true");
-
-    const handleReplaceTermToVideoChange = () => {
-        setReplaceTermToVideo(!replaceTermToVideo);
-        localStorage.setItem("displayVideoInTerm", !replaceTermToVideo);
-    };
-
     const handleCopy = () => {
         navigator.clipboard.writeText(shareUrl).then(() => {
             toast.success("Link copied to clipboard!");
@@ -225,6 +218,7 @@ const ViewSet = () => {
         handleDataInSetChange("numberSetPublic", resSetPublicCount.data.data);
         handleDataInSetChange("isAnonymous", resSetInfo.data.data.isAnonymous);
         handleDataInSetChange("sharingMode", resSetInfo.data.data.sharingMode);
+        handleDataInSetChange("tags", resSetInfo.data.data.tags || "");
 
         checkAndReturnSharingMode(resSetInfo.data.data.sharingMode, idUserOwner === userData.id);
 
@@ -799,24 +793,7 @@ const ViewSet = () => {
                                     onSound={handleOnSound}
                                     share={handleShowSharing}
                                     onDeleteSet={handleShowDelete}
-                                    replaceTermToVideo={replaceTermToVideo}
                                 />
-                            </div>
-
-                            <div className="flex items-center mb-6">
-                                <button
-                                    onClick={handleReplaceTermToVideoChange}
-                                    className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                                        replaceTermToVideo ? 'bg-blue-600' : 'bg-gray-300'
-                                    }`}
-                                >
-                                    <span
-                                        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200 ${
-                                            replaceTermToVideo ? 'translate-x-9' : 'translate-x-1'
-                                        }`}
-                                    />
-                                </button>
-                                <span className={`!ml-3`}>Use video instead of term (if have) </span>
                             </div>
 
                             <div className="button-container text-[1.1rem]">

@@ -8,6 +8,10 @@ import ReactDOMServer from 'react-dom/server';
 import TextEditor from "../TextEditor/TextEditor";
 import {htmlToText} from "html-to-text";
 import SpaceRepetitionCardState from "../../space-repetition-card-state/SpaceRepetitionCardState";
+import {toast} from "react-toastify";
+import {Video} from "lucide-react";
+import {VideoPreview} from "../../VideoPreview";
+import {useVideoDisplay} from "../../../context/VideoDisplayContext";
 
 function Flashcard({
                        frontHTML,
@@ -43,13 +47,15 @@ function Flashcard({
                        flipped = false,
                        srsState = "",
                        video = "",
-                       replaceTermToVideo = false,
                    }: FlashcardProps) {
     const [isFlipped, setIsFlipped] = useState(flipped);
     const [showModal, setShowModal] = useState(false);
     const [isStarMarked, setIsStarMarked] = useState<boolean | undefined>(false);
     const [newFrontHTML, setNewFrontHTML] = useState<string | JSX.Element>(frontHTML);
     const [newBackHTML, setNewBackHTML] = useState<string | JSX.Element>(backHTML);
+
+    const { showVideo } = useVideoDisplay();
+    
     const onManualFlip = () => {
         const newFlipState = !isFlipped;
         setIsFlipped(newFlipState);
@@ -73,25 +79,7 @@ function Flashcard({
     };
 
     const renderContent = (content: string | JSX.Element,
-                           contentStyle: CSSProperties | undefined,
-                           video: string,
-                           replace: boolean) => {
-        if (replace === true && video) {
-            return (
-                <>
-                    <div
-                        className="FlashcardWrapper__item--content"
-                        style={contentStyle}
-                    >
-                        <video
-                            controls
-                            src={video}
-                            style={{width: '100%', height: '100%'}}
-                        />
-                    </div>
-                </>
-            );
-        }
+                           contentStyle: CSSProperties | undefined) => {
         if (typeof content === "string") {
             return (
                 <div
@@ -107,7 +95,6 @@ function Flashcard({
             </div>
         );
     };
-
 
     // flashcard sau khi nhận được giá trị truyền từ cha - array cần useEffect để lấy giá trị mới nhất từ cha
     useEffect(() => {
@@ -152,6 +139,11 @@ function Flashcard({
             return newMarkedState;
         });
     };
+    const handleShowVideo = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+        if (video) showVideo(video);
+    };
+
     return (
         <div
             className={`FlashcardWrapper ${className}`}
@@ -161,6 +153,8 @@ function Flashcard({
                 ...style,
             }}
         >
+
+
             <Modal show={showModal} onHide={handleCloseModal} className="FlashcardModal"
                    style={modalStyle}>
                 <Modal.Header closeButton>
@@ -190,6 +184,8 @@ function Flashcard({
                 className={`FlashcardWrapper__item ${isFlipped ? "FlashcardWrapper__item--flip" : ""}`}
                 style={{
                     borderRadius: borderRadius,
+                    position: "relative",
+                    zIndex: "0",
                 }}
                 onClick={handleCardClick}
             >
@@ -203,6 +199,15 @@ function Flashcard({
                 >
                     <div className="tool" style={{display: 'flex', gap: '8px', ...toolStyle}}>
                         <SpaceRepetitionCardState state={srsState} className={"mr-4"}/>
+                        {
+                            video && <>
+                                <button className="tool-button !rounded-xl !text-xl !mt-2 !flex !justify-center !items-center"
+                                        onClick={handleShowVideo}>
+                                    <Video className="w-6 h-6 text-gray-700 mr-2"/>
+                                    <span>Play video</span>
+                                </button>
+                            </>
+                        }
                         <button className="tool-button"
                                 onClick={(e) => handleSound(e, htmlToText(convertToString(frontHTML)))}>
                             <img width={toolSize} height={toolSize}
@@ -222,7 +227,7 @@ function Flashcard({
                             </button>
                         }
                     </div>
-                    {renderContent(frontHTML, frontContentStyle, video, replaceTermToVideo)}
+                    {renderContent(frontHTML, frontContentStyle)}
                 </div>
 
                 {/* Mặt sau */}
@@ -240,13 +245,13 @@ function Flashcard({
                             <img width={toolSize} height={toolSize}
                                  src="https://img.icons8.com/ios/50/high-volume--v1.png" alt="sound"/>
                         </button>
-                        {
-                            canEdit &&
-                            <button className="tool-button" onClick={(e) => handleOpenModal(e)}>
-                                <img width={toolSize} height={toolSize} src="https://img.icons8.com/ios/50/edit--v1.png"
-                                     alt="edit"/>
-                            </button>
-                        }
+                        {/*{*/}
+                        {/*    canEdit &&*/}
+                        {/*    <button className="tool-button" onClick={(e) => handleOpenModal(e)}>*/}
+                        {/*        <img width={toolSize} height={toolSize} src="https://img.icons8.com/ios/50/edit--v1.png"*/}
+                        {/*             alt="edit"/>*/}
+                        {/*    </button>*/}
+                        {/*}*/}
                         {
                             canFavorite &&
                             <button className="tool-button" onClick={(e) => handleMark(e)}>
@@ -272,7 +277,7 @@ function Flashcard({
                                 width: img ? '50%' : '100%',
                             }}
                         >
-                            {renderContent(backHTML, backContentStyle, "", false)}
+                            {renderContent(backHTML, backContentStyle)}
                         </div>
 
                         {/* Image Section */}
@@ -300,7 +305,6 @@ function Flashcard({
                         )}
                     </div>
                 </div>
-
             </div>
         </div>
     );
