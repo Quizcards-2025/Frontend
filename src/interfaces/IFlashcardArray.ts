@@ -53,7 +53,6 @@ export default interface FlashcardArrayProps {
   flipped?: boolean;
   cardIndex?: number;
   setId?: number;
-  replaceTermToVideo?: boolean;
   onCardStatusChange ?:(idCard:number,statusProgress:boolean) => void;
   onChangedMark?: (index: number, marked: boolean) => void;
   onRandom?: () => void;

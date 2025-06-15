@@ -147,9 +147,8 @@ api.interceptors.response.use(
 
         // console.log(response);
 
-        if ((response?.status === 401 || response?.status === 403) &&
-            (response?.headers['x-validate-again'] === "true")
-            && !originalRequest._retry) {
+        if (((response?.headers['x-validate-again'] === "true") || response?.status === 401)
+            && (!originalRequest._retry)) {
             // đánh dấu đã retry
             originalRequest._retry = true;
 
@@ -164,6 +163,7 @@ api.interceptors.response.use(
                         onRefreshed(null);
                         localStorage.removeItem('access_token');
                         localStorage.removeItem('refresh_token');
+                        sessionStorage.removeItem("redirectAfterAuth");
                         toast.error('Session expired. Please log in again.');
                         window.location.href = '/login';
                     }

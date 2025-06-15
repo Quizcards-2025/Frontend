@@ -20,7 +20,7 @@ import DeleteSet from "../Button/DeleteSet";
 import Previous2 from "../Button/Previous2";
 import ButtonTemplate from "../../space-repetition/ButtonTemplate";
 import {Box} from "@mui/material";
-import {toast} from "react-toastify";
+import {VideoDisplayProvider} from "../../../context/VideoDisplayContext";
 
 interface CardFlipState {
     [id: any]: { state: boolean }; // Cập nhật kiểu để chứa `state`
@@ -71,7 +71,6 @@ function FlashcardArray({
                             share = () => {
                             },
                             setId = null,
-                            replaceTermToVideo = false,
                             onDeleteSet = () => {
                             },
                             onSrsSubmitCard = () => {
@@ -146,7 +145,6 @@ function FlashcardArray({
             canFavorite={canFavorite}
             flipped={currentFlipStates[card.id]?.state ?? flipped}
             srsState={card.srsState}
-            replaceTermToVideo={replaceTermToVideo}
         />
     ));
 
@@ -368,132 +366,134 @@ function FlashcardArray({
     }, [onSpaceRepetition]);
 
     return (
-        <div className="FlashcardArrayWrapper" style={FlashcardArrayStyle}>
-            {/*{*/}
-            {/*    onStudy &&*/}
-            {/*    <Progress totalRecall={numberRecall} totalRemember={numberRemember} styleProgress={styleProgress}/>*/}
-            {/*}*/}
-            <div
-                className="FlashcardArrayWrapper__CardHolder"
-                style={{overflow: isOverFlow, height: "fit-content"}}
-            >
-                {cardsInDisplay[0] !== -1
-                    ? cardsList[cardsInDisplay[0]]
-                    : placeFillerCard}
-                {cardsList[cardsInDisplay[1]]}
-                {cardsInDisplay[2] !== -1
-                    ? cardsList[cardsInDisplay[2]]
-                    : placeFillerCard}
-            </div>
-            {(onStudy) && (
-                <div className="FlashcardArrayWrapper__controls">
-                    <Previous onClick={prevCard}/>
-                    <span style={{color: "#babefd"}}>Pre </span>
-                    <Recall onClick={handleRecall}/>
-                    {
-                        showCount &&
-                        <ShowCount currentPage={cardNumber + 1} totalPages={cardsList.length}/>
-                    }
-
-                    <RandomCard onClick={handleShuffleCards}/>
-                    <Link to='/user'>
-                        <Minimize onClick={minimize}/>
-                    </Link>
-
-                    <Remember onClick={handleRemember}/>
-                    <Reset onClick={resetArray}/>
+        <VideoDisplayProvider>
+            <div className="FlashcardArrayWrapper" style={FlashcardArrayStyle}>
+                {/*{*/}
+                {/*    onStudy &&*/}
+                {/*    <Progress totalRecall={numberRecall} totalRemember={numberRemember} styleProgress={styleProgress}/>*/}
+                {/*}*/}
+                <div
+                    className="FlashcardArrayWrapper__CardHolder"
+                    style={{overflow: isOverFlow, height: "fit-content"}}
+                >
+                    {cardsInDisplay[0] !== -1
+                        ? cardsList[cardsInDisplay[0]]
+                        : placeFillerCard}
+                    {cardsList[cardsInDisplay[1]]}
+                    {cardsInDisplay[2] !== -1
+                        ? cardsList[cardsInDisplay[2]]
+                        : placeFillerCard}
                 </div>
-            )}
-            {(onSpaceRepetition) && (
-                <div className="mt-2">
-                    {
-                        currentFlipStates[cards[cardNumber]?.id]?.state ?
-                            <>
-                                <Box className="flex gap-4 justify-center items-center">
-                                    <Previous2 onClick={prevCardSpaceRepetition} svgSize={30}/>
-                                    <ButtonTemplate
-                                        label="Again"
-                                        icon="1"
-                                        bgColor="#FFDFDF"
-                                        textColor="#E73D3D"
-                                        circleBg="#E73D3D"
-                                        highlightBg="#ff9e9e"
-                                        highlightText="#b71c1c"
-                                        highlightCircle="#b71c1c"
-                                        onClick={() => nextCardSpaceRepetition("Again")}
-                                    />
-                                    <ButtonTemplate
-                                        label="Hard"
-                                        icon="2"
-                                        bgColor="#FFE9CB"
-                                        textColor="#FF9500"
-                                        circleBg="#FF9500"
-                                        highlightBg="#ff9e9e"
-                                        highlightText="#b71c1c"
-                                        highlightCircle="#b71c1c"
-                                        onClick={() => nextCardSpaceRepetition("Hard")}
-                                    />
-                                    <ButtonTemplate
-                                        label="Good"
-                                        icon="3"
-                                        bgColor="#C3FFC8"
-                                        textColor="#00C310"
-                                        circleBg="#00C310"
-                                        highlightBg="#ff9e9e"
-                                        highlightText="#b71c1c"
-                                        highlightCircle="#b71c1c"
-                                        onClick={() => nextCardSpaceRepetition("Good")}
-                                    />
-                                    <ButtonTemplate
-                                        label="Easy"
-                                        icon="4"
-                                        bgColor="#BABEFD"
-                                        textColor="#0E22E9"
-                                        circleBg="#0E22E9"
-                                        highlightBg="#ff9e9e"
-                                        highlightText="#b71c1c"
-                                        highlightCircle="#b71c1c"
-                                        onClick={() => nextCardSpaceRepetition("Easy")}
-                                    />
-                                </Box>
-                            </> :
-                            <>
-                            <div className="FlashcardArrayWrapper__controls">
-                                <Previous2 onClick={prevCardSpaceRepetition} svgSize={30}/>
-                                {
-                                    showCount &&
-                                    <ShowCount currentPage={cardNumber + 1} totalPages={cardsList.length}/>
-                                }
-                            </div>
-                            </>
-                            }
-                            </div>
-                        )}
-                    {
-                        !onSpaceRepetition && !onStudy && (
+                {(onStudy) && (
                     <div className="FlashcardArrayWrapper__controls">
-                        <Maximize onClick={maximize}/>
-                        <Return onClick={prevCard}/>
-
+                        <Previous onClick={prevCard}/>
+                        <span style={{color: "#babefd"}}>Pre </span>
+                        <Recall onClick={handleRecall}/>
                         {
                             showCount &&
                             <ShowCount currentPage={cardNumber + 1} totalPages={cardsList.length}/>
                         }
-                        {
-                            canEdit &&
-                            <PencelEdit onClick={handleMoveToEdit}/>
-                        }
-                        <Next onClick={nextCard}/>
+
+                        <RandomCard onClick={handleShuffleCards}/>
+                        <Link to='/user'>
+                            <Minimize onClick={minimize}/>
+                        </Link>
+
+                        <Remember onClick={handleRemember}/>
                         <Reset onClick={resetArray}/>
-                        <Share onClick={share}/>
+                    </div>
+                )}
+                {(onSpaceRepetition) && (
+                    <div className="mt-2">
                         {
-                            canDelete && <DeleteSet onClick={onDeleteSet}/>
+                            currentFlipStates[cards[cardNumber]?.id]?.state ?
+                                <>
+                                    <Box className="flex gap-4 justify-center items-center">
+                                        <Previous2 onClick={prevCardSpaceRepetition} svgSize={30}/>
+                                        <ButtonTemplate
+                                            label="Again"
+                                            icon="1"
+                                            bgColor="#FFDFDF"
+                                            textColor="#E73D3D"
+                                            circleBg="#E73D3D"
+                                            highlightBg="#ff9e9e"
+                                            highlightText="#b71c1c"
+                                            highlightCircle="#b71c1c"
+                                            onClick={() => nextCardSpaceRepetition("Again")}
+                                        />
+                                        <ButtonTemplate
+                                            label="Hard"
+                                            icon="2"
+                                            bgColor="#FFE9CB"
+                                            textColor="#FF9500"
+                                            circleBg="#FF9500"
+                                            highlightBg="#ff9e9e"
+                                            highlightText="#b71c1c"
+                                            highlightCircle="#b71c1c"
+                                            onClick={() => nextCardSpaceRepetition("Hard")}
+                                        />
+                                        <ButtonTemplate
+                                            label="Good"
+                                            icon="3"
+                                            bgColor="#C3FFC8"
+                                            textColor="#00C310"
+                                            circleBg="#00C310"
+                                            highlightBg="#ff9e9e"
+                                            highlightText="#b71c1c"
+                                            highlightCircle="#b71c1c"
+                                            onClick={() => nextCardSpaceRepetition("Good")}
+                                        />
+                                        <ButtonTemplate
+                                            label="Easy"
+                                            icon="4"
+                                            bgColor="#BABEFD"
+                                            textColor="#0E22E9"
+                                            circleBg="#0E22E9"
+                                            highlightBg="#ff9e9e"
+                                            highlightText="#b71c1c"
+                                            highlightCircle="#b71c1c"
+                                            onClick={() => nextCardSpaceRepetition("Easy")}
+                                        />
+                                    </Box>
+                                </> :
+                                <>
+                                    <div className="FlashcardArrayWrapper__controls">
+                                        <Previous2 onClick={prevCardSpaceRepetition} svgSize={30}/>
+                                        {
+                                            showCount &&
+                                            <ShowCount currentPage={cardNumber + 1} totalPages={cardsList.length}/>
+                                        }
+                                    </div>
+                                </>
                         }
                     </div>
-                )
-            }
+                )}
+                {
+                    !onSpaceRepetition && !onStudy && (
+                        <div className="FlashcardArrayWrapper__controls">
+                            <Maximize onClick={maximize}/>
+                            <Return onClick={prevCard}/>
 
-        </div>
+                            {
+                                showCount &&
+                                <ShowCount currentPage={cardNumber + 1} totalPages={cardsList.length}/>
+                            }
+                            {
+                                canEdit &&
+                                <PencelEdit onClick={handleMoveToEdit}/>
+                            }
+                            <Next onClick={nextCard}/>
+                            <Reset onClick={resetArray}/>
+                            <Share onClick={share}/>
+                            {
+                                canDelete && <DeleteSet onClick={onDeleteSet}/>
+                            }
+                        </div>
+                    )
+                }
+
+            </div>
+        </VideoDisplayProvider>
     );
 }
 

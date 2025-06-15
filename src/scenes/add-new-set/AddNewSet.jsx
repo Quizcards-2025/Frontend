@@ -1,5 +1,5 @@
-import {Box, Button, useMediaQuery, useTheme} from "@mui/material";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {Box, Button, CircularProgress, Typography, useMediaQuery, useTheme} from "@mui/material";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import ReactQuill from "react-quill";
 import CreateCardButton from "../../components/icon/CreateCardButton.jsx";
 import Plus from "../../components/icon/Plus.jsx";
@@ -10,7 +10,7 @@ import ImagePreview from "../../components/ImagePreview.jsx";
 import ImageToggleButton from "../../components/ImageToggleButton.jsx";
 import api from "../../apis/api.js";
 import {
-    MaxFlashcardsMessage,
+    MaxFlashcardsMessage, MaxVideosMessage,
     PremiumUpgradeMessage,
     usePremiumFilter
 } from "../../components/component-add-update/PremiumFilter.jsx";
@@ -40,14 +40,18 @@ function AddNewSet() {
     const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [benefits, setBenefits] = useState({});
-    const [maxFlashcards, setMaxFlashcards] = useState(0);
-    const [isFreeUser, setIsFreeUser] = useState(true);
-    const [isBlockPageByPremium, setIsBlockPageByPremium] = useState(false);
+    const [maxFlashcardsPerSet, setMaxFlashcardsPerSet] = useState(0);
+    const [isNormalSubscription, setIsNormalSubscription] = useState(true);
+    const [blockAddPage, setBlockAddPage] = useState(false);
     const [blockMessageBody, setBlockMessageBody] = useState(<></>);
 
     const [videoUploadProgress, setVideoUploadProgress] = useState({});
     const [videoPreviewModal, setVideoPreviewModal] = useState(false);
     const [videoPreviewData, setVideoPreviewData] = useState(null);
+
+    const countVideos = () => {
+        return listCard.filter(card => card.video || card.videoUrl || card.videoLink).length;
+    };
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -57,6 +61,14 @@ function AddNewSet() {
     const [selectedCategory, setSelectedCategory] = useState(1);
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+
+    const [processingUploadingMedia, setProcessingUploadingMedia] = useState(false);
+    const [processingAddingSet, setProcessingAddingSet] = useState(false);
+    const [processingCommitVideos, setProcessingCommitVideos] = useState(false);
+
+    const processingHandleAddingSet = useCallback(() => {
+        return processingUploadingMedia || processingAddingSet || processingCommitVideos;
+    }, [processingUploadingMedia, processingAddingSet, processingCommitVideos]);
 
     const upgradeModal = useRef(null);
 
@@ -80,48 +92,50 @@ function AddNewSet() {
                     resCategories,
                     resRole,
                     resBenefit,
-                    resNumberSet,
-                    resMaxSetCreatedToday,
+                    // resNumberSet,
+                    // resMaxSetCreatedToday,
+                    resAnalysis,
                 ] = await Promise.all([
                     api.get("/v1/category/list"),
                     api.get("/v1/auth/user-info"),
                     api.get("/v1/category-subscription/my-subscription"),
-                    api.get("/v1/set/count-set"),
-                    api.get("/v1/set/count-set-in-current-date"),
+                    // api.get("/v1/set/count-set"),
+                    // api.get("/v1/set/count-set-in-current-date"),
+                    api.get("/v1/set/analysis/current-user")
                 ]);
 
                 setCategories(resCategories.data);
                 let freeUser = canAccess(resRole.data.role, [Roles.FREE_USER]);
-                setIsFreeUser(freeUser);
+                // setIsNormalSubscription(freeUser);
+                setIsNormalSubscription(resBenefit.data.normalSubscription);
 
                 setBenefits(resBenefit.data);
-                setMaxFlashcards(resBenefit.data.maxFlashcardsPerSet ?? 0);
+                setMaxFlashcardsPerSet(resBenefit.data.maxFlashcardsPerSet ?? 0);
 
-                if (resNumberSet.data.data >= resBenefit.data.maxSetsFlashcards) {
+                if (resAnalysis.data.setCardCreated >= resBenefit.data.maxSetsFlashcards) {
                     blockPageFunction(
-                        `You cannot create more sets because the maximum number of sets is: ${resBenefit.data.maxSetsFlashcards}`,
-                        freeUser
+                        `You cannot create more sets because the maximum number of sets is: ${resBenefit.data.maxSetsFlashcards}`
                     );
                     return;
                 }
-                if (resMaxSetCreatedToday.data.data >= resBenefit.data.maxSetsPerDay) {
+                if (resAnalysis.data.setCardCreatedPerDay >= resBenefit.data.maxSetsPerDay) {
                     blockPageFunction(
-                        `You cannot create more sets because the maximum number of sets created per day is: ${resBenefit.data.maxSetsPerDay}`,
-                        freeUser
+                        `You cannot create more sets because the maximum number of sets created per day is: ${resBenefit.data.maxSetsPerDay}`
                     );
                 }
             } catch (err) {
-                if (err.response && err.response.status === 401) {
-                    loginRedirect();
-                }
+                // if (err.response && err.response.status === 401) {
+                //     loginRedirect();
+                // }
                 console.error(err);
+                toast.error("An error occurred, please try again");
             }
         };
 
         checkUserStatus().then().catch();
     }, []);
 
-    const handlePremiumFilter = usePremiumFilter(isFreeUser);
+    const handlePremiumFilter = usePremiumFilter(isNormalSubscription);
 
     const BlockMessage = ({toastId}) => (
         <div>
@@ -130,7 +144,7 @@ function AddNewSet() {
             <button id="cancelBtn" onClick={() => toast.dismiss(toastId)}>
                 Cancel
             </button>
-            {isFreeUser && (
+            {isNormalSubscription && (
                 <button id="saveButtonBtn" onClick={() => toast.dismiss(toastId)}>
                     Go to upgrade
                 </button>
@@ -138,43 +152,37 @@ function AddNewSet() {
         </div>
     );
 
-    const blockPageFunction = (message, freeUser) => {
-        setIsBlockPageByPremium(true);
+    const blockPageFunction = useCallback((message) => {
+        setBlockAddPage(true);
         setBlockMessageBody(
             <>
                 <p style={{marginTop: "14px"}}>{message}</p>
-                {freeUser && <p style={{marginBottom: "14px"}}>Do you want to upgrade ?</p>}
+                {isNormalSubscription && <p style={{marginBottom: "14px"}}>Do you want to upgrade ?</p>}
             </>
         );
         blockPageBtn.current.click();
-    };
+    }, [isNormalSubscription]);
 
-    const showToastr = (ToastComponent, type) => {
-        const options = {autoClose: true, closeButton: true};
-        if (type === "error") {
-            toast.error(<ToastComponent/>, options);
-        } else if (type === "warning") {
-            toast.warning(<ToastComponent/>, options);
-        } else if (type === "success") {
-            toast.success(<ToastComponent/>, options);
-        }
-    };
-
-    const loginRedirect = () => {
-        const currentUrl = window.location.pathname + window.location.search;
-        const loginUrl = `/login?redirect=${encodeURIComponent(currentUrl)}`;
-        window.location.href = loginUrl;
-    };
+    // const blockPageFunction = (message, normalSubscription) => {
+    //     setBlockAddPage(true);
+    //     setBlockMessageBody(
+    //         <>
+    //             <p style={{marginTop: "14px"}}>{message}</p>
+    //             {normalSubscription && <p style={{marginBottom: "14px"}}>Do you want to upgrade ?</p>}
+    //         </>
+    //     );
+    //     blockPageBtn.current.click();
+    // };
 
     const addCard = useCallback(() => {
-        setListCard((prev) => [...prev, {id: prev.length + 1, front: "", back: "", img: ""}]);
-    }, []);
+        setListCard((prev) => [...prev, {id: performance.now(), front: "", back: "", img: ""}]);
+    }, [listCard]);
 
     const removeCard = useCallback(
         (id) => {
             setListCard((prev) => prev.filter(card => card.id !== id));
         }
-        , []
+        , [listCard]
     );
 
     const uploadVideoToS3 = async (videoFile) => {
@@ -200,10 +208,103 @@ function AddNewSet() {
         }
     };
 
+    const uploadVideosToS3 = async (videoEntries) => {
+        // videoEntries: mảng các object { index, id, file }
+        //   - index: vị trí của card trong listCard gốc
+        //   - id: dùng để update progress (setVideoUploadProgress)
+        //   - file: File object cần upload
+
+        const BATCH_SIZE = 10;
+        // const videoUrls = new Array(videoEntries.length).fill(""); // sẽ chứa kết quả cuối
+        const videoUrls = new Array(videoEntries.length).fill({}); // sẽ chứa kết quả cuối
+
+        // 1. Đánh dấu tất cả các video cards đang 'uploading'
+        videoEntries.forEach(({id}) => {
+            setVideoUploadProgress((prev) => ({...prev, [id]: "uploading"}));
+        });
+
+        // 2. Chia thành các batch
+        const batches = [];
+        for (let i = 0; i < videoEntries.length; i += BATCH_SIZE) {
+            batches.push(videoEntries.slice(i, i + BATCH_SIZE));
+        }
+
+        // 3. Tạo các Promise cho từng batch
+        const batchPromises = batches.map((batch) => (async () => {
+            // Chuẩn bị FormData cho batch này
+            const formData = new FormData();
+            batch.forEach(({file}) => {
+                formData.append("files", file);
+                formData.append("sizes", file.size);
+            });
+
+            // Gọi API upload batch
+            const response = await api.post(
+                "/v1/videos/upload",
+                formData,
+                {headers: {"Content-Type": "multipart/form-data"}}
+            );
+
+            if (response.data.success) {
+                // Server trả về videoUrls đúng thứ tự tương ứng với batch
+                // const returnedUrls = response.data.videoUrls;
+                // returnedUrls.forEach((url, idx) => {
+                //     const {index} = batch[idx];
+                //     // videoUrls[index] = url;
+                //     videoUrls[index] = {
+                //         "videoUrl": url,
+                //     };
+                // });
+                // const keyUrls = response.data.videoKeys;
+                // keyUrls.forEach((key, idx) => {
+                //     const {index} = batch[idx];
+                //     videoUrls[index] = {
+                //         ...videoUrls[index],
+                //         "videoKey": key,
+                //     }
+                // });
+
+                const returnedUrls = response.data.videoUrls;
+                const keyUrls = response.data.videoKeys;
+                const combined = returnedUrls.map((url, idx) => ({
+                    videoUrl: url,
+                    videoKey: keyUrls[idx]
+                }));
+
+                combined.forEach((item, idx) => {
+                    const { index } = batch[idx];
+                    videoUrls[index] = item;
+                });
+            } else {
+                throw new Error(response.data.message || "Upload failed for this batch");
+            }
+        })());
+
+        // 4. Chạy song song các batchPromises và xử lý success/fail
+        try {
+            await Promise.all(batchPromises);
+            // Nếu thành công tất cả, đánh dấu completed
+            videoEntries.forEach(({id}) => {
+                setVideoUploadProgress((prev) => ({...prev, [id]: "completed"}));
+            });
+        } catch (err) {
+            // Nếu có batch bất kỳ fail, đánh dấu những index chưa có URL là 'failed'
+            videoEntries.forEach(({index, id}) => {
+                if (!videoUrls[index]) {
+                    setVideoUploadProgress((prev) => ({...prev, [id]: "failed"}));
+                    toast.error(`Failed to upload video for card ${id}: ${err.message}`);
+                }
+            });
+            throw err; // Ném tiếp để upstream biết có lỗi
+        }
+
+        return videoUrls;
+    };
+
     // Handle video upload (thêm sau handleImageRemove function)
     const handleVideoUpload = (event, id) => {
         const file = event.target.files[0];
-        console.log("Video file:", file);
+        // console.log("Video file:", file);
         if (file) {
             // Validate video file type
             const allowedVideoTypes = [
@@ -223,9 +324,12 @@ function AddNewSet() {
                 return;
             }
 
-            // Store video file in card data
             setListCard((prev) =>
-                prev.map((card) => card.id === id ? {...card, video: file, videoPreview: URL.createObjectURL(file)} : card)
+                prev.map((card) => card.id === id ? {
+                    ...card,
+                    video: file,
+                    videoPreview: URL.createObjectURL(file)
+                } : card)
             );
         }
     };
@@ -320,20 +424,20 @@ function AddNewSet() {
             cards = parseImportTextBaseOnString(text, termSeparator, cardSeparator, hasImage);
         }
         // console.log(text);
-        if (isFreeUser) {
-            if (cards.length >= maxFlashcards) {
-                toast.error(`Cannot parse card because max cards of set are: ${maxFlashcards}.`);
+        // if (isNormalSubscription) {
+        if (cards.length >= maxFlashcardsPerSet) {
+            toast.error(`Cannot parse card because max cards of set are: ${maxFlashcardsPerSet}.`);
+            setListCard([]);
+            return;
+        }
+        for (let card of cards) {
+            if (card.img && benefits.canAddImage !== true) {
+                toast.error("Cannot parse card because you don't have permission to insert image link.");
                 setListCard([]);
                 return;
             }
-            for (let card of cards) {
-                if (card.img) {
-                    toast.error("Cannot parse card because you are free user but insert image link.");
-                    setListCard([]);
-                    return;
-                }
-            }
         }
+        // }
         let newCards = cards.map(card => ({
             id: card.id,
             front: textToHtml(card.front),
@@ -343,16 +447,74 @@ function AddNewSet() {
         // console.log(newCards);
         console.log("Parse done");
         setListCard(newCards);
-    }, [isFreeUser, maxFlashcards]);
+    }, [maxFlashcardsPerSet]);
 
     const parseChangedImportTextDelay = useCallback(
         debounce((text, useMotipQAChange, termSeparator, cardSeparator, hasImage) => {
             handleParseChangedImportText(text, useMotipQAChange, termSeparator, cardSeparator, hasImage);
         }, 1200),
-        [isFreeUser]
+        [maxFlashcardsPerSet]
     );
 
-    const uploadAllImagesToCloud = async (listCard) => {
+    const uploadAllMediasToCloud_temp = async (listCard) => {
+        // 1. Upload ảnh song song (Firebase)
+        const imagePromises = listCard.map((card) => {
+            if (card.img) {
+                return uploadToFirebase(storage, card.img, "images", null, null)
+                    .then((url) => {
+                        return url;
+                    }).catch(err => {
+                        console.error("Error uploading image:", err);
+                        toast.error(`Failed to upload image for card ${card.id}: ${err.message}`);
+                        return ""; // Trả về chuỗi rỗng nếu upload thất bại
+                    });
+            }
+            return Promise.resolve("");
+        });
+
+        // 2. Tạo danh sách videoEntries (chỉ các card có card.video)
+        const videoEntries = listCard
+            .map((card, index) => {
+                if (card.video) {
+                    return {
+                        index,   // dùng để gán vị trí sau
+                        id: card.id, // để cập nhật progress
+                        file: card.video
+                    };
+                }
+                return null;
+            })
+            .filter((e) => e !== null);
+
+        // 3. Nếu có ít nhất 1 video, gọi uploadVideosToS3; ngược lại khởi mảng rỗng
+        // let videoUrls = new Array(listCard.length).fill({});
+        let videoUrls = new Array(listCard.length).fill({});
+        if (videoEntries.length > 0) {
+            videoUrls = await uploadVideosToS3(videoEntries);
+            // videoUrls = '';
+        }
+
+        // 4. Chờ ảnh upload xong
+        const imageUrls = await Promise.all(imagePromises);
+
+        console.log("Video URLs:", videoUrls);
+
+        const newListCard = listCard.map((card, idx) => ({
+            question: convertHtmlToText(card.front),
+            answer: convertHtmlToText(card.back),
+            imageLink: imageUrls[idx] || "",
+            // videoLink: videoUrls[idx] || ""
+            videoLink: videoUrls[idx]?.videoUrl || "",
+            videoKey: videoUrls[idx]?.videoKey || "",
+        }));
+
+        // 6. Reset progress
+        setVideoUploadProgress({});
+
+        return newListCard;
+    };
+
+    const uploadAllMediasToCloud = async (listCard) => {
         let newListCard = [];
         for (let card of listCard) {
             let downloadUrl = "";
@@ -382,7 +544,8 @@ function AddNewSet() {
                 question: convertHtmlToText(card.front),
                 answer: convertHtmlToText(card.back),
                 imageLink: downloadUrl,
-                videoLink: videoUrl
+                // videoLink: videoUrl
+                videoLink: '',
             });
         }
         setVideoUploadProgress({});
@@ -398,6 +561,8 @@ function AddNewSet() {
             const form = new FormData();
             aiFiles.forEach(f => form.append("files", f));
             form.append("numberOfFlashcards", aiNum);
+            form.append("setTitle", title);
+            form.append("setDescription", description);
 
             const res = await api.post("/v1/generate/flashcards", form, {
                 headers: {"Content-Type": "multipart/form-data"}
@@ -407,7 +572,7 @@ function AddNewSet() {
             if (success) {
                 // map về cấu trúc của listCard
                 const cards = flashcards.map((f, i) => ({
-                    id: i + 1,
+                    id: performance.now(),
                     front: textToHtml(f.question),
                     back: textToHtml(f.answer),
                     img: ""
@@ -429,8 +594,8 @@ function AddNewSet() {
             throw new Error("Error card");
         }
 
-        if (listCard.length > maxFlashcards) {
-            toast.error(`You cannot add set flashcard because max cards of set are: ${maxFlashcards}`);
+        if (listCard.length > maxFlashcardsPerSet) {
+            toast.error(`You cannot add set flashcard because max cards of set are: ${maxFlashcardsPerSet}`);
             throw new Error("Error card");
         }
 
@@ -443,16 +608,14 @@ function AddNewSet() {
                 messageError = "Missing question or answer in card";
                 isOk = false;
             }
-            if (isOk && convertHtmlToText(card.front).length > 500 ||
-                convertHtmlToText(card.back).length > 500) {
-                messageError = "Length of question or answer must be less than 500.";
+            if (isOk && convertHtmlToText(card.front).length > 800 ||
+                convertHtmlToText(card.back).length > 800) {
+                messageError = "Length of question or answer must be less than 800.";
                 isOk = false;
             }
-            if (isOk && card.img) {
-                if (isFreeUser) {
-                    messageError = "You cannot add set flashcard because u maybe cheating...";
-                    isOk = false;
-                }
+            if (isOk && card.img && benefits.canAddImage !== true) {
+                messageError = "You cannot add set flashcard because you can't have permission to add media.";
+                isOk = false;
             }
             if (!isOk) {
                 toast.error(messageError);
@@ -470,7 +633,7 @@ function AddNewSet() {
             return;
         }
 
-        if (isFreeUser && isAnonymous) {
+        if (benefits.isSetAnonymous !== true && isAnonymous) {
             toast.error("Free user cannot set anonymous.");
             return;
         }
@@ -489,13 +652,19 @@ function AddNewSet() {
         }
 
         event.preventDefault();
-        document.body.style.opacity = "0.5";
+        // document.body.style.opacity = "0.5";
         document.body.style.pointerEvents = "none";
+        const buttonCreate = document.getElementById("id-button-create");
+        const oldStyleDisplay = buttonCreate.style.display;
+        buttonCreate.style.display = "none";
         let failed = false;
         let setIdCreated = 0;
 
         try {
-            const newListCards = await uploadAllImagesToCloud(listCard);
+            setProcessingUploadingMedia(true);
+            const newListCards = await uploadAllMediasToCloud_temp(listCard);
+            setProcessingUploadingMedia(false);
+            setProcessingAddingSet(true);
             const setData = {
                 title,
                 descriptionSet: description,
@@ -509,17 +678,50 @@ function AddNewSet() {
             const res = await api.post("/v1/set/create-new-set", setData);
             console.log(res);
             if (res.status === 201) {
-                toast.success("Added card successfully");
-                setTimeout(() => {
-                    navigate(`/user/set/detail/${res.data.data}`);
-                }, 2000);
+                setProcessingAddingSet(false);
+                toast.success("Added card successfully", {
+                    style: {
+                        position: "fixed",
+                        zIndex: 9999,
+                        right: 0,
+                    },
+                    position: "top-right",
+                });
+                try {
+                    setProcessingCommitVideos(true);
+                    const keyVideos = res.data.keyVideos;
+                    if (keyVideos) {
+                        console.log("Key videos:", keyVideos);
+                        await api.put("/v1/videos/commit-videos", keyVideos);
+                    }
+                } catch (err) {
+                    console.error("Error committing videos:", err);
+                    toast.error("Error during commit some videos, may not be saved and will automatically " +
+                        "delete after 5 minutes.", {
+                        style: {
+                            position: "fixed",
+                                zIndex: 9999,
+                                right: 0,
+                        },
+                        position: "top-right",
+                    });
+                } finally {
+                    setProcessingCommitVideos(false);
+                    setTimeout(() => {
+                        navigate(`/user/set/detail/${res.data.setId}`);
+                    }, 2000);
+                }
             }
         } catch (err) {
             console.error(err);
             toast.error(err.message);
         } finally {
-            document.body.style.opacity = "1";
+            // document.body.style.opacity = "1";
+            buttonCreate.style.display = oldStyleDisplay;
             document.body.style.pointerEvents = "";
+            setProcessingUploadingMedia(false);
+            setProcessingAddingSet(false);
+            setProcessingCommitVideos(false);
         }
     };
 
@@ -765,25 +967,35 @@ function AddNewSet() {
                                             borderRadius: '0 0 18px 18px',
                                             background: '#fff',
                                         }}
-                                        onClick={() => {
-                                            setShowAIGenerate(true);
-                                            setImportFile(false);
-                                            setImportDropdownOpen(false);
-                                        }}
+                                        onClick={
+                                            (e) => handlePremiumFilter(
+                                                e,
+                                                benefits.isUploadDocument !== true,
+                                                () => {
+                                                    setShowAIGenerate(true);
+                                                    setImportFile(false);
+                                                    setImportDropdownOpen(false);
+                                                },
+                                                PremiumUpgradeMessage
+                                            )}
                                     >
                                         <span style={{flex: 1}}>AI-generate with document</span>
-                                        <span style={{
-                                            marginLeft: 12,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            background: '#ede7f6',
-                                            borderRadius: '50%',
-                                            width: 28,
-                                            height: 28,
-                                            justifyContent: 'center'
-                                        }}>
-                                            <LockIcon style={{color: '#7c4dff', fontSize: 20}}/>
-                                        </span>
+                                        {
+                                            benefits.isUploadDocument !== true && <>
+                                                <span style={{
+                                                    marginLeft: 12,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    background: '#ede7f6',
+                                                    borderRadius: '50%',
+                                                    width: 28,
+                                                    height: 28,
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <LockIcon style={{color: '#7c4dff', fontSize: 20}}/>
+                                                </span>
+                                            </>
+                                        }
                                     </div>
                                 </div>
                             )}
@@ -895,13 +1107,13 @@ function AddNewSet() {
                                 }}
                                         onClick={(e) => handlePremiumFilter(
                                             e,
-                                            isFreeUser,
+                                            benefits.isSetAnonymous !== true,
                                             () => setIsAnonymous(isAnonymous => !isAnonymous),
                                             PremiumUpgradeMessage
                                         )}>
                                     Anonymous
                                     {
-                                        isFreeUser && <LockIcon/>
+                                        benefits.isSetAnonymous !== true && <LockIcon/>
                                     }
                                 </button>
                             </div>
@@ -934,7 +1146,7 @@ function AddNewSet() {
                             placeholder: "Enter your document...",
                         }}
                         onCancel={() => {
-                            setListCard([]);
+                            // setListCard([]);
                             setImportFile(false);
                         }}
                         onSave={() => {
@@ -1171,10 +1383,13 @@ function AddNewSet() {
                                         id={`videoUpload-${card.id}`}
                                         accept="video/mp4,video/avi,video/mov,video/wmv,video/flv,video/webm,video/mkv,video/m4v"
                                         onClick={(e) => handlePremiumFilter(e,
-                                            isFreeUser,
+                                            countVideos() >= benefits.numberVideosCanAdd,
                                             () => {
                                             },
-                                            PremiumUpgradeMessage
+                                            isNormalSubscription ? PremiumUpgradeMessage : MaxVideosMessage,
+                                            {
+                                                numberVideosCanAdd: benefits.numberVideosCanAdd,
+                                            }
                                         )}
                                         onChange={(e) => {
                                             handleVideoUpload(e, card.id);
@@ -1185,13 +1400,15 @@ function AddNewSet() {
                                     />
                                     <VideoToggleButton
                                         hasVideo={card.video}
-                                        onRemove={(e) => handlePremiumFilter(e,
-                                            isFreeUser,
-                                            () => handleVideoRemove(card.id),
-                                            PremiumUpgradeMessage
-                                        )}
+                                        // onRemove={(e) => handlePremiumFilter(e,
+                                        //     isNormalSubscription,
+                                        //     () => handleVideoRemove(card.id),
+                                        //     PremiumUpgradeMessage
+                                        // )}
+                                        onRemove={(e) => handleVideoRemove(card.id)}
                                         onUpload={() => document.getElementById(`videoUpload-${card.id}`).click()}
-                                        childComponent={!isFreeUser ? <></> : <LockIcon/>}
+                                        childComponent={!(countVideos() >= benefits.numberVideosCanAdd) ? <></> :
+                                            <LockIcon/>}
                                     />
 
                                     {/* Video Upload Progress */}
@@ -1268,7 +1485,8 @@ function AddNewSet() {
                                     id={`imageUpload-${card.id}`}
                                     accept="image/*"
                                     onClick={(e) => handlePremiumFilter(e,
-                                        isFreeUser,
+                                        // isNormalSubscription,
+                                        benefits.canAddImage !== true,
                                         () => {
                                         },
                                         PremiumUpgradeMessage
@@ -1282,13 +1500,14 @@ function AddNewSet() {
                                 />
                                 <ImageToggleButton
                                     hasImage={card.img}
-                                    onRemove={(e) => handlePremiumFilter(e,
-                                        isFreeUser,
-                                        () => handleImageRemove(card.id),
-                                        PremiumUpgradeMessage
-                                    )}
+                                    // onRemove={(e) => handlePremiumFilter(e,
+                                    //     benefits.canAddImage,
+                                    //     () => handleImageRemove(card.id),
+                                    //     PremiumUpgradeMessage
+                                    // )}
+                                    onRemove={() => handleImageRemove(card.id)}
                                     onUpload={() => document.getElementById(`imageUpload-${card.id}`).click()}
-                                    childComponent={!isFreeUser ? <></> : <LockIcon/>}
+                                    childComponent={!(benefits.canAddImage !== true) ? <></> : <LockIcon/>}
                                 />
                             </div>
 
@@ -1302,12 +1521,12 @@ function AddNewSet() {
                     <Box sx={{display: "flex", justifyContent: "center"}}>
                         <div style={{position: "relative"}}>
                             <Plus onClick={(e) => handlePremiumFilter(e,
-                                listCard.length >= maxFlashcards,
+                                listCard.length >= maxFlashcardsPerSet,
                                 addCard,
                                 MaxFlashcardsMessage
                             )} style={{cursor: "pointer"}}/>
                             {
-                                listCard.length >= maxFlashcards &&
+                                listCard.length >= maxFlashcardsPerSet &&
                                 <div style={{position: "absolute", top: -10, right: -10}}>
                                     <LockIcon/>
                                 </div>
@@ -1324,7 +1543,7 @@ function AddNewSet() {
                     width: "100%",
                     height: "100%",
                     backgroundColor: "rgba(0, 0, 0, 0)",
-                    display: isBlockPageByPremium ? "block" : "none",
+                    display: blockAddPage ? "block" : "none",
                 }}>
                     <button ref={blockPageBtn} style={{
                         width: "100%",
@@ -1342,8 +1561,9 @@ function AddNewSet() {
                 </div>
             </Box>
 
-            {!isBlockPageByPremium && !importFile &&
+            {!blockAddPage && !importFile &&
                 <button
+                    id="id-button-create"
                     style={{
                         position: "fixed",
                         bottom: "30px",
@@ -1362,6 +1582,32 @@ function AddNewSet() {
                 showVideoPreview={videoPreviewModal}
                 setShowVideoPreview={setVideoPreviewModal}
             />
+
+            {
+                processingHandleAddingSet() &&
+                <>
+                    <Box className={`!fixed 
+                    !flex !flex-col !justify-center !items-center !h-full 
+                    !top-0 !left-0 !w-full !z-[9999] !bg-black/70`}>
+                        <CircularProgress
+                            size={40}
+                            thickness={4}
+                            sx={{
+                                color: '#1976d2',
+                            }}
+                        />
+                        <Typography
+                            className="!text-gray-200 !mt-4 !ml-2 !text-center !text-base"
+                            variant="subtitle1">
+                            Processing {
+                                processingUploadingMedia ? "uploading media" :
+                                    processingAddingSet ? "adding set" :
+                                        processingCommitVideos ? "committing videos" : ""
+                            } ...
+                        </Typography>
+                    </Box>
+                </>
+            }
         </>
     );
 }

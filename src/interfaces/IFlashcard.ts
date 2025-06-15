@@ -23,7 +23,6 @@ export default interface FlashcardProps {
     onSound?: (content: string) => void;
     img?: string;
     video?: string;
-    replaceTermToVideo?: boolean;
     canEdit?: boolean;
     canFavorite?: boolean;
     flipped?: boolean;
