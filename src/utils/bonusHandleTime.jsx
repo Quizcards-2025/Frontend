@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 export function formatTime(time) {
     if (time !== undefined && time !== null) {
         const totalSeconds = Math.floor(time / 1000);
@@ -11,9 +13,14 @@ export function formatTime(time) {
 
 export function calculateRemainingTime(createdAt, endAt) {
     if (createdAt && endAt) {
-        const now = new Date();
-        const end = new Date(endAt);
-        return Math.max(end - now, 0);
+        // const now = new Date();
+        // const end = new Date(endAt);
+        // return Math.max(end - now, 0);
+        const now = dayjs.utc();        // Giờ hiện tại theo UTC
+        const end = dayjs.utc(endAt);   // Parse endAt theo UTC
+
+        const diff = end.diff(now);     // Hiệu số theo miligiây
+        return Math.max(diff, 0);       // Trả về >= 0
     }
     return null;
 }

@@ -86,6 +86,7 @@ const DoingMultipleChoiceTest = () => {
     const [endAt, setEndedAt] = useState(null);
 
     useEffect(() => {
+        // console.log("Diff milli:", diffMilli);
         if (diffMilli === 0) {
             changeToDetailTest();
         }
@@ -224,6 +225,7 @@ const DoingMultipleChoiceTest = () => {
             if (resTestData.data.testModeName !== "MULTIPLE") {
                 navigate("/");
             }
+            console.log(resTestData);
             setQuestions(resTestData.data.questions);
             setCreatedAt(resTestData.data.createdAt);
             setEndedAt(resTestData.data.endAt);
