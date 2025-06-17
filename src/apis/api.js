@@ -2,11 +2,11 @@
 import axios from 'axios';
 import {toast} from "react-toastify";
 
-export const apiStr = 'http://localhost:8080/api';
-export const baseApiStr = 'http://localhost:8080/api';
+// export const apiStr = 'http://localhost:8080/api';
+// export const baseApiStr = 'http://localhost:8080/api';
 
-// export const apiStr = 'https://13.212.202.156/api';
-// export const baseApiStr = 'https://13.212.202.156/api';
+export const apiStr = 'https://quizcardsbe.com/api';
+export const baseApiStr = 'https://quizcardsbe.com/api';
 
 export const api = axios.create({
     baseURL: apiStr,
