@@ -240,6 +240,15 @@ function Flashcard({
                 >
                     <div className="tool" style={toolStyle}>
                         <SpaceRepetitionCardState state={srsState} className={"mr-4"}/>
+                        {
+                            video && <>
+                                <button className="tool-button !rounded-xl !text-xl !mt-2 !flex !justify-center !items-center"
+                                        onClick={handleShowVideo}>
+                                    <Video className="w-6 h-6 text-gray-700 mr-2"/>
+                                    <span>Play video</span>
+                                </button>
+                            </>
+                        }
                         <button className="tool-button"
                                 onClick={(e) => handleSound(e, htmlToText(convertToString(backHTML)))}>
                             <img width={toolSize} height={toolSize}
