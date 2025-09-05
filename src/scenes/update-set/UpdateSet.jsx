@@ -153,12 +153,14 @@ function UpdateSet() {
             front: textToHtml(item.question),
             back: textToHtml(item.answer),
             img: item.imageUrl,
+            video: item.videoUrl,
         })));
         setCloneListCard(resCard.data.map(item => ({
             id: item.cardId,
             front: textToHtml(item.question),
             back: textToHtml(item.answer),
             img: item.imageUrl,
+            video: item.videoUrl,
         })));
     };
 
@@ -330,9 +332,9 @@ function UpdateSet() {
             messageError = "Missing question or answer in card";
             isOk = false;
         }
-        if (isOk && convertHtmlToText(card.front).length > 800 ||
-            convertHtmlToText(card.back).length > 800) {
-            messageError = "Length of question or answer must be less than 800.";
+        if (isOk && convertHtmlToText(card.front).length > 1000 ||
+            convertHtmlToText(card.back).length > 1000) {
+            messageError = "Length of question or answer must be less than 1000.";
             isOk = false;
         }
         if (isOk && card.img && benefits.canAddImage !== true && card.newImg) {
@@ -418,6 +420,7 @@ function UpdateSet() {
                         question: convertHtmlToText(card.front),
                         answer: convertHtmlToText(card.back),
                         imageLink: downloadUrl,
+                        videoLink: card.video,
                         setId: id,
                     });
                     toast.success("Updated card successfully");
@@ -425,7 +428,7 @@ function UpdateSet() {
                     setListCard((prev) =>
                         prev.map((card) => card.id === editingCardId ? {
                             ...card,
-                            newImg: false, img: downloadUrl,
+                            newImg: false, img: downloadUrl, video: card.video,
                             front: textToHtml(convertHtmlToText(card.front)),
                             back: textToHtml(convertHtmlToText(card.back)),
                         } : card)
@@ -434,6 +437,7 @@ function UpdateSet() {
                         prev.map((card) => card.id === editingCardId ? {
                             ...card,
                             img: downloadUrl,
+                            video: card.video,
                             front: textToHtml(convertHtmlToText(card.front)),
                             back: textToHtml(convertHtmlToText(card.back)),
                         } : card)

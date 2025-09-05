@@ -488,6 +488,7 @@ const ViewSet = () => {
             await api.patch("/v1/progress/user/assign-progress", {
                 isAttention: marked,
                 cardId: index,
+                setId: id,
             });
             handleDataCardsChange("fullCards", dataCards.fullCards.map(
                 (card) => card.id === index ? {...card, mark: marked} : {...card}

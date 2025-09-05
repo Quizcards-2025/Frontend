@@ -105,7 +105,7 @@ function App() {
         if (!localStorage.getItem("starting_use")) {
             localStorage.setItem("starting_use", JSON.stringify(dayjs().tz(dayjs.tz.guess())));
         }
-        setupPushNotification();
+        // setupPushNotification();
         fetchStreakData();
     }, []);
     return (

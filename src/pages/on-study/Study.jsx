@@ -175,6 +175,7 @@ function Study() {
             await api.patch("/v1/progress/user/assign-progress", {
                 progressType: status,
                 cardId: idCard,
+                setId: id,
             });
             setCardRecallIds(prevState => ({
                 ...prevState,

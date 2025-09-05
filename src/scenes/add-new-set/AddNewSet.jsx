@@ -10,7 +10,8 @@ import ImagePreview from "../../components/ImagePreview.jsx";
 import ImageToggleButton from "../../components/ImageToggleButton.jsx";
 import api from "../../apis/api.js";
 import {
-    MaxFlashcardsMessage, MaxVideosMessage,
+    MaxFlashcardsMessage,
+    MaxVideosMessage,
     PremiumUpgradeMessage,
     usePremiumFilter
 } from "../../components/component-add-update/PremiumFilter.jsx";
@@ -30,6 +31,10 @@ import {parseImportTextBaseOnString, parseImportTextQToA} from "src/utils/parseI
 import debounce from "lodash/debounce";
 import {VideoPreview} from "src/components/VideoPreview.jsx";
 import {VideoToggleButton} from "src/components/VideoToggleButton.jsx";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import TextField from "@mui/material/TextField";
+import {LuCircleX} from "react-icons/lu";
 
 function AddNewSet() {
     const navigate = useNavigate();
@@ -82,8 +87,26 @@ function AddNewSet() {
 
     const [aiFiles, setAiFiles] = useState([]);
     const [aiFileError, setAiFileError] = useState("");
-    const [aiNum, setAiNum] = useState(1);
+    const [aiNum, setAiNum] = useState(2);
     const [aiNumError, setAiNumError] = useState("");
+
+    const [mcqNumOptionsError, setMcqNumOptionsError] = useState('');
+
+    const minMcqNumOptions = 3;
+    const maxMcqNumOptions = 5;
+
+    const defaultTypeOfGenQuiz = "mcq";
+    const defaultTypeOfEssayQuiz = "qa";
+    const defaultMcqNumOptions = 4;
+
+    const [typeOfGenQuiz, setTypeOfGenQuiz] = useState(defaultTypeOfGenQuiz); // type: mcq (Multiple choice) (default), tf (True/False), es (Essay)
+    const [typeOfEssayQuiz, setTypeOfEssayQuiz] = useState(defaultTypeOfEssayQuiz); // type: qa (Question - Answer: Default), td (Term - Definition)
+    const [mcqNumOptions, setMcqNumOptions] = useState(defaultMcqNumOptions); // default: 4, from 3 to 5
+
+    const minAiGenCards = 2;
+    const maxAiGenCards = 150;
+
+    const [genFromAIStatus, setGenFromAIStatus] = useState(false);
 
     useEffect(() => {
         const checkUserStatus = async () => {
@@ -134,6 +157,15 @@ function AddNewSet() {
 
         checkUserStatus().then().catch();
     }, []);
+
+    useEffect(() => {
+        setMcqNumOptionsError('');
+        if (typeOfGenQuiz === 'mcq') {
+            setMcqNumOptions(4);
+        } else if (typeOfGenQuiz === 'es') {
+            setTypeOfEssayQuiz('qa');
+        }
+    }, [typeOfGenQuiz]);
 
     const handlePremiumFilter = usePremiumFilter(isNormalSubscription);
 
@@ -272,7 +304,7 @@ function AddNewSet() {
                 }));
 
                 combined.forEach((item, idx) => {
-                    const { index } = batch[idx];
+                    const {index} = batch[idx];
                     videoUrls[index] = item;
                 });
             } else {
@@ -563,8 +595,14 @@ function AddNewSet() {
             form.append("numberOfFlashcards", aiNum);
             form.append("setTitle", title);
             form.append("setDescription", description);
+            form.append("typeOfQuestion", typeOfGenQuiz);
+            form.append("typeOfEssayQuestion", typeOfEssayQuiz);
+            form.append("numberOfOptions", mcqNumOptions);
 
-            const res = await api.post("/v1/generate/flashcards", form, {
+            // const res = await api.post("/v1/generate/flashcards", form, {
+            //     headers: {"Content-Type": "multipart/form-data"}
+            // });
+            const res = await api.post("/v1/ai/generate/flashcards", form, {
                 headers: {"Content-Type": "multipart/form-data"}
             });
             const {success, message, flashcards} = res.data;
@@ -572,12 +610,13 @@ function AddNewSet() {
             if (success) {
                 // map về cấu trúc của listCard
                 const cards = flashcards.map((f, i) => ({
-                    id: performance.now(),
+                    id: (i + 1) + "-AI_GEN-" + performance.now(),
                     front: textToHtml(f.question),
                     back: textToHtml(f.answer),
                     img: ""
                 }));
-                setListCard(cards);
+                // setListCard(cards);
+                setListCard((prev) => [...prev, ...cards]);
                 toast.success(message);
             } else {
                 toast.error(message);
@@ -672,7 +711,7 @@ function AddNewSet() {
                 sharingMode: privacy,
                 categoryId: selectedCategory,
                 tagNames: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-                hashPassword: password,
+                password: password,
                 flashcards: newListCards,
             };
             const res = await api.post("/v1/set/create-new-set", setData);
@@ -690,7 +729,7 @@ function AddNewSet() {
                 try {
                     setProcessingCommitVideos(true);
                     const keyVideos = res.data.keyVideos;
-                    if (keyVideos) {
+                    if (keyVideos && keyVideos.length > 0) {
                         console.log("Key videos:", keyVideos);
                         await api.put("/v1/videos/commit-videos", keyVideos);
                     }
@@ -700,8 +739,8 @@ function AddNewSet() {
                         "delete after 5 minutes.", {
                         style: {
                             position: "fixed",
-                                zIndex: 9999,
-                                right: 0,
+                            zIndex: 9999,
+                            right: 0,
                         },
                         position: "top-right",
                     });
@@ -730,7 +769,9 @@ function AddNewSet() {
         const allowedTypes = [
             'application/pdf',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+            'application/msword',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+            'application/vnd.ms-excel',
             'image/png',
             'image/jpg',
             'image/jpeg',
@@ -738,9 +779,18 @@ function AddNewSet() {
             'image/x-png',
         ];
         const allowedExts = ['pdf', 'docx', 'xlsx', 'png', 'jpg', 'jpeg'];
-        let newFiles = [...aiFiles];
+        let newFiles = [...aiFiles]; // files hiện tại trong state
         let invalid = false;
-        for (let file of files) {
+
+        // Lọc trùng trong danh sách files mới (trong cùng lần chọn): dùng Set theo reference
+        const seenFiles = new Set(); // so sánh object reference
+        const uniqueNewFiles = files.filter(file => {
+            if (seenFiles.has(file)) return false;
+            seenFiles.add(file);
+            return true;
+        });
+
+        for (let file of uniqueNewFiles) {
             const ext = file.name.split('.').pop().toLowerCase();
             if (
                 !allowedExts.includes(ext) &&
@@ -750,9 +800,15 @@ function AddNewSet() {
                 continue;
             }
             if (newFiles.length >= 5) break;
-            if (newFiles.find(f => f.name === file.name && f.size === file.size)) continue;
+
+            // ❌ Lọc trùng với aiFiles hiện tại: vẫn dùng name + size (vì reference cũ đã mất sau unmount/reset)
+            // Không thể dùng === vì file mới là object mới, kể cả cùng file trên disk
+            const isDuplicate = newFiles.some(f => f.name === file.name && f.size === file.size);
+            if (isDuplicate) continue;
+
             newFiles.push(file);
         }
+
         const totalSize = newFiles.reduce((acc, f) => acc + f.size, 0);
         if (totalSize > 50 * 1024 * 1024) {
             setAiFileError('Total file size must not exceed 50MB!');
@@ -766,8 +822,12 @@ function AddNewSet() {
             setAiFileError('You can only import up to 5 files.');
             return;
         }
+
         setAiFileError("");
         setAiFiles(newFiles);
+
+        // ✅ Reset input để có thể chọn lại file đã xóa hoặc trùng sau này
+        e.target.value = '';
     };
 
     return (
@@ -1040,6 +1100,7 @@ function AddNewSet() {
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     placeholder="************"
+                                    autoComplete="off"
                                     style={{
                                         border: 'none',
                                         outline: 'none',
@@ -1175,14 +1236,21 @@ function AddNewSet() {
                 {showAIGenerate && (
                     <Box sx={{
                         width: '100%',
-
-
                         bgcolor: '#f7f7fb',
                         borderRadius: {xs: 2, sm: 4},
                         boxShadow: '0 4px 24px rgba(80,80,160,0.08)',
                         p: {xs: 2, sm: 4},
                         mt: 4,
+                        position: 'relative'
                     }}>
+                        <LuCircleX
+                            className="!absolute !top-[5%] !right-[5%] !cursor-pointer !text-gray-600 hover:!text-gray-400 active:!text-black"
+                            size={40}
+                            onClick={() => {
+                                setShowAIGenerate(false);
+                                setImportFile(false);
+                            }}
+                        />
                         <Box sx={{fontWeight: 500, fontSize: 16, mb: 1}}>
                             Import with document <span style={{color: '#888'}}>(support .pdf, .docx, .xlsx, .png, .jpg, .jpeg):</span>
                         </Box>
@@ -1226,22 +1294,24 @@ function AddNewSet() {
                                     gap: 1
                                 }}>
                                     {aiFiles.map((file, idx) => (
-                                        <Box key={file.name + file.size} sx={{
-                                            bgcolor: '#ede7f6',
-                                            color: '#222',
-                                            borderRadius: 3,
-                                            px: 2.5,
-                                            py: 1.2,
-                                            fontSize: 16,
-                                            fontWeight: 600,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 1.5,
-                                            width: '100%',
-                                            wordBreak: 'break-all',
-                                            whiteSpace: 'normal',
-                                            boxSizing: 'border-box'
-                                        }} title={file.name}>
+                                        <Box
+                                            key={file.name + file.size}
+                                            sx={{
+                                                bgcolor: '#ede7f6',
+                                                color: '#222',
+                                                borderRadius: 3,
+                                                px: 2.5,
+                                                py: 1.2,
+                                                fontSize: 16,
+                                                fontWeight: 600,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1.5,
+                                                width: '100%',
+                                                wordBreak: 'break-all',
+                                                whiteSpace: 'normal',
+                                                boxSizing: 'border-box'
+                                            }} title={file.name}>
                                             <span style={{color: '#888', fontSize: 18, marginRight: 6}}>📄</span>
                                             <span style={{flex: 1}}>{file.name}</span>
                                             <span style={{
@@ -1275,61 +1345,169 @@ function AddNewSet() {
                                 </Box>
                             )}
                         </Box>
-                        <Box sx={{fontWeight: 500, fontSize: 16, mb: 1}}>Number of flashcards</Box>
-                        <input type="number" min={2} max={200} value={aiNum} onChange={e => {
-                            let val = Number(e.target.value);
-                            if (!val || val < 2) {
-                                setAiNum(2);
-                                setAiNumError('Number of flashcards must be between 2 and 200.');
-                            } else if (val > 200) {
-                                setAiNum(200);
-                                setAiNumError('Number of flashcards must be between 2 and 200.');
-                            } else {
-                                setAiNum(val);
-                                setAiNumError("");
-                            }
-                        }} style={{
+                        <Box sx={{fontWeight: 500, fontSize: 16, mb: 1}}>Number of flashcards
+                            (Min: {minAiGenCards} cards -- Max: {maxAiGenCards} cards)</Box>
+                        <input type="number" min={minAiGenCards}
+                               max={maxAiGenCards}
+                               value={aiNum}
+                               onChange={(e) => setAiNum(e.target.value)}
+                               onBlur={e => {
+                                   let val = Number(e.target.value);
+                                   let warningText = `Number of generate flashcards by AI must be between ${minAiGenCards} and ${maxAiGenCards}`;
+                                   if (!val || val < minAiGenCards || val > maxAiGenCards) {
+                                       setAiNum(Math.max(minAiGenCards, Math.min(maxAiGenCards, val)));
+                                       setAiNumError(warningText);
+                                   } else {
+                                       setAiNum(val);
+                                       setAiNumError("");
+                                   }
+                               }} style={{
                             width: '100%',
                             borderRadius: 12,
                             padding: '14px 18px',
                             fontSize: 18,
                             border: '1px solid #e0e0e0',
                             background: '#fff',
-                            marginBottom: 18
+                            marginBottom: 12,
                         }}/>
                         {aiNumError && (
                             <Box sx={{color: 'red', fontWeight: 500, fontSize: 15, mb: 1, px: 1}}>{aiNumError}</Box>
                         )}
 
-                        <Button
-                            fullWidth
-                            sx={{
-                                background: 'linear-gradient(90deg,#b983ff,#a259c6)',
-                                color: '#fff',
-                                borderRadius: 2,
-                                fontWeight: 700,
-                                fontSize: 20,
-                                py: 2.2,
-                                mt: 1,
-                                boxShadow: '0 2px 8px rgba(160,80,255,0.08)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: 1.5,
-                                '&:hover': {background: 'linear-gradient(90deg,#a259c6,#b983ff)'},
-                            }}
-                            onClick={() => {
-                                if (aiFiles.length === 0 || aiFileError || aiNum < 2 || aiNum > 200) {
-                                    setAiNumError('Not enough valid files or number of flashcards to generate.');
-                                    return;
-                                }
-                                setAiNumError("");
-                                console.log('Generate', aiFiles, aiNum);
-                                handleGenerateAI().then().catch();
-                            }}
+                        <Box
+                            className={"w-full flex flex-col lg:flex-row justify-between items-center mb-3 mt-0 gap-3 lg:gap-8"}
                         >
-                            <span style={{fontSize: 22}}>✨</span> Generate
-                        </Button>
+                            <Box className="flex-1 flex flex-col w-full lg:w-auto">
+                                <Typography variant="body1" className="!mb-1 !font-medium !text-base">
+                                    Type of question
+                                </Typography>
+                                <Select
+                                    value={typeOfGenQuiz}
+                                    onChange={(e) => setTypeOfGenQuiz(e.target.value)}
+                                    className={"w-full h-[60px] !bg-white !rounded-[15px] !border-0 !border-b-4 !border-solid !border-b-violet-300 !p-2"}
+                                >
+                                    <MenuItem value="mcq">Multiple Choice</MenuItem>
+                                    <MenuItem value="tf">True/False</MenuItem>
+                                    <MenuItem value="es">Essay</MenuItem>
+                                </Select>
+                            </Box>
+
+                            {
+                                typeOfGenQuiz === "mcq" && (
+                                    <>
+                                        <Box className="flex-1 flex flex-col w-full lg:w-auto">
+                                            <Typography variant="body1" className="!mb-1 !font-medium !text-base">
+                                                Number of options (Min: {minMcqNumOptions} options --
+                                                Max: {maxMcqNumOptions} options)
+                                            </Typography>
+                                            <TextField
+                                                sx={{
+                                                    '& .MuiOutlinedInput-root': {
+                                                        borderRadius: '1.5rem', // tương đương rounded-3xl
+                                                        '& .MuiOutlinedInput-notchedOutline': {
+                                                            borderRadius: '1.5rem',
+                                                        },
+                                                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                                            borderRadius: '1.5rem',
+                                                            borderWidth: '2px', // tùy chọn: tăng độ dày viền khi focus
+                                                        },
+                                                    },
+                                                }}
+                                                inputProps={{
+                                                    style: {
+                                                        fontSize: 18,
+                                                        padding: "1rem 1rem"
+                                                    },
+                                                }}
+                                                className="!bg-white !rounded-3xl"
+                                                value={mcqNumOptions}
+                                                type="number"
+                                                onChange={(e) => setMcqNumOptions(e.target.value)}
+                                                onBlur={(e) => {
+                                                    let val = Number(e.target.value);
+                                                    let warningText = `Number of options in multiple choice must be between ${minMcqNumOptions} and ${maxMcqNumOptions}`;
+                                                    if (!val || val < minMcqNumOptions || val > maxMcqNumOptions) {
+                                                        setMcqNumOptions(Math.max(minMcqNumOptions, Math.min(maxMcqNumOptions, val)));
+                                                        setMcqNumOptionsError(warningText);
+                                                    } else {
+                                                        setMcqNumOptions(val);
+                                                        setMcqNumOptionsError("");
+                                                    }
+                                                }}
+                                            />
+                                        </Box>
+                                    </>
+                                )
+                            }
+
+                            {
+                                typeOfGenQuiz === "es" && (
+                                    <>
+                                        <Box className="flex-1 flex flex-col w-full lg:w-auto">
+                                            <Typography variant="body1" className="!mb-1 !font-medium !text-base">
+                                                Type of essay question
+                                            </Typography>
+                                            <Select
+                                                value={typeOfEssayQuiz}
+                                                onChange={(e) => setTypeOfEssayQuiz(e.target.value)}
+                                                className={"w-full h-[60px] !bg-white !rounded-[15px] !border-0 !border-b-4 !border-solid !border-b-violet-300 !p-2"}
+                                            >
+                                                <MenuItem value="qa">Question - Answer</MenuItem>
+                                                <MenuItem value="td">Term - Definition</MenuItem>
+                                            </Select>
+                                        </Box>
+                                    </>
+                                )
+                            }
+                        </Box>
+
+                        {
+                            mcqNumOptionsError && (
+                                <Box sx={{
+                                    color: 'red',
+                                    fontWeight: 500,
+                                    fontSize: 15,
+                                    mb: 1,
+                                    px: 1,
+                                }}>{mcqNumOptionsError}</Box>
+                            )
+                        }
+
+                        {
+                            !genFromAIStatus && <>
+                                <Button
+                                    fullWidth
+                                    sx={{
+                                        background: 'linear-gradient(90deg,#b983ff,#a259c6)',
+                                        color: '#fff',
+                                        borderRadius: 2,
+                                        fontWeight: 700,
+                                        fontSize: 20,
+                                        py: 2.2,
+                                        mt: 1,
+                                        boxShadow: '0 2px 8px rgba(160,80,255,0.08)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 1.5,
+                                        '&:hover': {background: 'linear-gradient(90deg,#a259c6,#b983ff)'},
+                                    }}
+                                    onClick={() => {
+                                        if (aiFiles.length === 0 || aiFileError || aiNum < 2 || aiNum > 200) {
+                                            setAiNumError('Not enough valid files or number of flashcards to generate.');
+                                            return;
+                                        }
+                                        setAiNumError("");
+                                        console.log('Generate', aiFiles, aiNum);
+                                        setGenFromAIStatus(true);
+                                        handleGenerateAI().then().catch()
+                                            .finally(() => setGenFromAIStatus(false));
+                                    }}
+                                >
+                                    <span style={{fontSize: 22}}>✨</span> Generate
+                                </Button>
+                            </>
+                        }
                     </Box>
                 )}
 
@@ -1493,6 +1671,7 @@ function AddNewSet() {
                                     )}
                                     onChange={(e) => {
                                         handleImageUpload(e, card.id);
+                                        // what ?? e.target.value = '';
                                         const inp = document.getElementById(`imageUpload-${card.id}`);
                                         if (inp) inp.value = '';
                                     }}
@@ -1561,7 +1740,7 @@ function AddNewSet() {
                 </div>
             </Box>
 
-            {!blockAddPage && !importFile &&
+            {!blockAddPage && !importFile && !genFromAIStatus &&
                 <button
                     id="id-button-create"
                     style={{
@@ -1600,10 +1779,32 @@ function AddNewSet() {
                             className="!text-gray-200 !mt-4 !ml-2 !text-center !text-base"
                             variant="subtitle1">
                             Processing {
-                                processingUploadingMedia ? "uploading media" :
-                                    processingAddingSet ? "adding set" :
-                                        processingCommitVideos ? "committing videos" : ""
-                            } ...
+                            processingUploadingMedia ? "uploading media" :
+                                processingAddingSet ? "adding set" :
+                                    processingCommitVideos ? "committing videos" : ""
+                        } ...
+                        </Typography>
+                    </Box>
+                </>
+            }
+
+            {
+                genFromAIStatus &&
+                <>
+                    <Box className={`!fixed 
+                    !flex !flex-col !justify-center !items-center !h-full 
+                    !top-0 !left-0 !w-full !z-[9999] !bg-black/70`}>
+                        <CircularProgress
+                            size={40}
+                            thickness={4}
+                            sx={{
+                                color: '#1976d2',
+                            }}
+                        />
+                        <Typography
+                            className="!text-gray-200 !mt-4 !ml-2 !text-center !text-base"
+                            variant="subtitle1">
+                            Generating from AI ...
                         </Typography>
                     </Box>
                 </>

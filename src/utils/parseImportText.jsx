@@ -8,7 +8,7 @@ function extracted(index, flashcards, currentFlashcard) {
         front: currentFlashcard.front ? currentFlashcard.front.trim() : currentFlashcard.front,
         back: currentFlashcard.back ? currentFlashcard.back.trim() : currentFlashcard.back,
         img: currentFlashcard.img,
-        id: index,
+        id: index + "-SIMPLE_PARSE-" + performance.now(),
     });
     currentFlashcard = {front: "", back: "", img: null};
     return {index, currentFlashcard};
@@ -72,7 +72,7 @@ export const parseImportTextQToA = (text) => {
                 currentFlashcard.front.trim() : currentFlashcard.front,
             back: currentFlashcard.back ? currentFlashcard.back.trim() : currentFlashcard.back,
             img: currentFlashcard.img,
-            id: index + 1,
+            id: (index + 1) + "-SIMPLE_PARSE-" + performance.now(),
         });
     }
 
@@ -143,7 +143,7 @@ const textSplit = (text, subStringToRemove, hasImage = false) => {
 
 const initCards = (id, term, definition, image) => {
     const card = {
-        id,
+        id: id + "-SIMPLE_PARSE-" + performance.now(),
         front: term.trim(),
         back: definition.trim(),
     };
@@ -182,7 +182,7 @@ const parseImportTextIfNotSameSeparator = (text, termSeparator, cardSeparator, h
 
             if (hasImage && (card.front?.trim() || card.back?.trim() || card.img?.trim())) {
                 return {
-                    id,
+                    id: id + "-SIMPLE_PARSE-" + performance.now(),
                     front: card.front?.trim() || "",
                     back: card.back?.trim() || "",
                     img: card.img?.trim(),
@@ -190,7 +190,7 @@ const parseImportTextIfNotSameSeparator = (text, termSeparator, cardSeparator, h
             }
             if (!hasImage && (card.front?.trim() || card.back?.trim())) {
                 return {
-                    id,
+                    id: id + "-SIMPLE_PARSE-" + performance.now(),
                     front: card.front?.trim() || "",
                     back: card.back?.trim() || "",
                 };
