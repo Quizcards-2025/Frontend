@@ -1,0 +1,53 @@
+// @ts-ignore
+import React from "react";
+
+interface DeleteSetProps {
+    svgSize?: number; // kích thước của svg
+    buttonSize?: number; // kích thước của nút
+    onClick: () => void; // hàm xử lý sự kiện click
+}
+
+const DeleteSet: React.FC<DeleteSetProps> = ({ svgSize = 20, buttonSize = 40, onClick }) => {
+    return (
+        <div
+            className="button-control"
+            onClick={onClick}
+            style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderBottom: "5px solid #e0e0fe",
+                backgroundColor: "white",
+                width: `${buttonSize}px`,
+                height: `${buttonSize}px`,
+                borderRadius: "15px",
+                cursor: "pointer",
+            }}
+            onMouseDown={(e) => {
+                e.currentTarget.style.transform = "scale(0.95)";
+                e.currentTarget.style.boxShadow = "0 0 5px rgba(165, 181, 207, 0.1)";
+            }}
+            onMouseUp={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "none";
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "none";
+            }}
+        >
+            <svg
+                width={svgSize}
+                height={svgSize}
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z" fill="currentColor"/>
+                <path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
+            </svg>
+        </div>
+    );
+};
+
+export default DeleteSet;

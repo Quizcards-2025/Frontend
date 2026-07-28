@@ -1,0 +1,486 @@
+.detailContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 0 20px;
+
+  @media (min-width: 600px) { // sm breakpoint
+    margin: 0 50px;
+  }
+
+  @media (min-width: 960px) { // md breakpoint
+    margin: 0 150px;
+  }
+
+  @media (min-width: 1280px) { // lg breakpoint
+    margin: 0 250px;
+  }
+
+  position: relative;
+}
+
+.detailTestStartContainer {
+  flex: 0 0 40px;
+  display: flex;
+  border-bottom: 2px solid black;
+}
+
+.detailTestContainer {
+  border-radius: 0.9375rem;
+  flex: 1;
+  width: 100% !important;
+  color: rgba(182, 183, 191, 1);
+  margin: 0;
+  padding: 0.8125rem 0.625rem;
+  font: 700 1.5rem 'Wix Madefor Text', -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+.containerProgress {
+  display: flex;
+  border-radius: 0.9375rem;
+  background-color: rgb(210, 210, 232);
+  flex-direction: column;
+  color: rgba(182, 183, 191, 1);
+  margin: 0;
+  padding: 0.8125rem 0.625rem;
+  font: 700 1.5rem 'Wix Madefor Text', -apple-system, Roboto, Helvetica, sans-serif;
+  overflow-y: scroll;
+  width: 20% !important;
+  float: left;
+  position: sticky !important;
+  top: 0;
+  z-index: 999;
+}
+
+.title {
+  color: rgba(11, 14, 19, 1);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 0.9;
+  align-self: start;
+  margin-bottom: 0.625rem;
+}
+
+.numberRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 40px);
+  gap: 5px;
+  justify-content: start;
+}
+
+.cardWrapper {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border-radius: 1.063rem;
+  aspect-ratio: 0.973;
+  padding: 2.813rem 2.313rem;
+}
+
+.backgroundImage {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 1.063rem;
+}
+
+.numberText {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .container {
+    max-width: 7rem;
+    font-size: 3rem;
+  }
+
+  .cardWrapper {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    max-width: 5.5rem;
+    font-size: 2.5rem;
+  }
+
+  .cardWrapper {
+    padding: 1.5rem 1rem;
+  }
+}
+
+.imgSuccessCardWrapper {
+  width: 140px;
+  height: 140px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.imgSuccessNumberText {
+  position: absolute;
+  z-index: 100;
+  font-size: 4rem;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .imgSuccessCardWrapper {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .imgSuccessCardWrapper {
+    padding: 1.5rem 1rem;
+  }
+}
+
+.imgErrorCardWrapper {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  bottom: 0;
+  transform: translateX(168%);
+}
+
+.imgErrorNumberText {
+  position: absolute;
+  z-index: 100;
+  font-size: 3rem;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .imgErrorCardWrapper {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .imgErrorCardWrapper {
+    padding: 1.5rem 1rem;
+  }
+}
+
+.imgNullCardWrapper {
+  width: 60px;
+  height: 60px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  right: 0;
+  top: 20px;
+}
+
+
+.imgNullNumberText {
+  position: absolute;
+  z-index: 100;
+  font-size: 2rem;
+  color: #807474;
+}
+
+@media (max-width: 768px) {
+  .imgNullCardWrapper {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .imgNullCardWrapper {
+    padding: 1.5rem 1rem;
+  }
+}
+
+
+.optionButtonCardContent {
+  background-color: rgba(250, 249, 252, 1);
+  z-index: 10;
+  display: flex;
+  margin-top: 1.563rem;
+  margin-left: 0.5rem;
+  width: 100%;
+  flex-direction: column;
+}
+
+.optionButtonTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.optionButtonSubtitle {
+  margin: 0.313rem 1.25rem 0 0;
+}
+
+.optionsButtonPracticeAgain {
+  text-transform: none !important;
+  font: inherit !important;
+  color: black !important;
+  display: flex !important;
+  flex-direction: column !important;
+  text-align: inherit !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: #F0F1F0 !important;
+  border: 0.125rem solid rgba(224, 224, 254, 1) !important;
+  border-radius: 0.938rem !important;
+
+  &:hover {
+    background-color: #d5dae8 !important;
+  }
+}
+
+.optionsButtonTakeAgain {
+  text-transform: none !important;
+  font: inherit !important;
+  color: black !important;
+  display: flex !important;
+  flex-direction: column !important;
+  text-align: inherit !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: #BABEFD !important;
+  border: 0.125rem solid rgba(224, 224, 254, 1) !important;
+  border-radius: 0.938rem !important;
+
+  &:hover {
+    background-color: #9da5bd !important;
+  }
+}
+
+.optionButtonBadge {
+  align-self: flex-start;
+  border-radius: 1.688rem;
+  background-color: rgba(224, 224, 254, 1);
+  margin-top: 1.188rem !important;
+  min-height: 1.938rem;
+  gap: 0.625rem;
+  padding: 0.563rem 0.813rem;
+}
+
+@media (max-width: 48rem) {
+  .optionButtonCardContent {
+    padding: 1rem;
+  }
+
+  .optionButtonTitle {
+    font-size: 1.25rem;
+  }
+}
+
+.containerTest {
+  background-color: rgba(248, 248, 255, 1);
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  color: #000000;
+  float: left;
+  width: 60% !important;
+
+  .containerTop {
+    display: flex;
+  }
+}
+
+.questionNumber {
+  color: rgba(182, 183, 191, 1);
+  font-weight: 700;
+  align-self: start;
+}
+
+.questionText {
+  margin-top: 0.75rem;
+}
+
+.optionsTopRow {
+  display: flex;
+  margin-top: 1.3125rem;
+  gap: 1.25rem;
+  font-size: 1rem;
+  flex-wrap: wrap;
+}
+
+.optionsBottomRow {
+  display: flex;
+  margin-top: 1.25rem;
+  gap: 1.25rem;
+  font-size: 1rem;
+  flex-wrap: wrap;
+}
+
+.optionButton {
+  border-radius: 0.9375rem;
+  background-color: rgba(237, 237, 255, 1);
+  width: fit-content;
+  cursor: pointer;
+  border: none;
+  font: inherit;
+  color: inherit;
+}
+
+.optionButtonSelected {
+  composes: optionButton;
+  background-color: rgb(121, 121, 248);
+  border: 0.125rem solid rgb(1, 3, 30);
+}
+
+@media (max-width: 61.9375rem) {
+  .questionContainer {
+    padding: 0 1.25rem;
+  }
+
+  .optionsBottomRow {
+    max-width: 100%;
+  }
+
+  .optionButton:last-child {
+    padding-right: 1.25rem;
+  }
+}
+
+//.doneContainer {
+//  border-radius: 0.9375rem;
+//  display: flex;
+//  max-width: 15.3125rem;
+//  flex-direction: column;
+//  color: rgb(250, 249, 252);
+//  white-space: nowrap;
+//  text-align: center;
+//  font: 700 1.75rem/0.9 'Wix Madefor Text', -apple-system, Roboto, Helvetica, sans-serif;
+//}
+//
+.doneButtonPlace {
+  color: rgba(0, 0, 0);
+  float: right;
+  width: 20% !important;
+  position: sticky !important;
+  top: 0;
+  z-index: 999 !important;
+}
+
+.doneButtonWrapper {
+  border-radius: 0.9375rem !important;
+  background-color: rgb(2, 14, 199) !important;
+  display: flex !important;
+  margin-top: 0.3125rem !important;
+  width: 100% !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 0.1875rem 0 !important;
+}
+
+.doneActionButton {
+  border-radius: 0.9375rem !important;
+  background-color: rgb(63, 79, 236) !important;
+  margin-top: -0.3125rem !important;
+  width: 100% !important;
+  padding: 1.875rem 4.375rem !important;
+  border: none !important;
+  cursor: pointer !important;
+  color: white !important;
+  font: inherit !important;
+  transition: background-color 0.3s ease !important;
+  text-transform: none !important;
+
+  &:hover {
+    background-color: rgb(20, 40, 240) !important;
+  }
+
+  &:focus {
+    outline: 0.125rem solid rgb(255, 255, 255) !important;
+    outline-offset: 0.125rem !important;
+  }
+
+  @media (max-width: 48rem) {
+    padding: 1.5rem 3rem !important;
+  }
+}
+
+@media (max-width: 48rem) {
+  .doneActionButton {
+    padding: 1.5rem 3rem !important;
+  }
+}
+
+.essayAnswerContainer {
+  display: flex !important;
+  flex-direction: column !important;
+  margin-top: 2px !important;
+  width: 100% !important;
+}
+
+.essayHeaderEntered {
+  width: 100% !important;
+  font-weight: 500 !important;
+  font-size: 1rem !important;
+  font-family: inherit !important;
+  color: #939393 !important;
+}
+
+.essayEnteredBase {
+  width: 100% !important;
+  border-radius: 0.9rem !important;
+  height: fit-content !important;
+  min-height: 3.5rem !important;
+  max-height: 600px !important;
+  margin-top: 0.5rem !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 1rem !important;
+}
+
+.essayYourAnswerEntered {
+  @extend .essayEnteredBase;
+  background-color: #fed2d2 !important;
+  color: #e73d3d !important;
+}
+
+.essayTrueAnswerEntered {
+  @extend .essayEnteredBase;
+  background-color: #e0e0fe !important;
+  color: #0e22e9 !important;
+}
+
+.essayAnswerDataContainer {
+  margin-left: 1rem !important;
+  overflow-y: auto !important;
+  width: 100% !important;
+  max-height: 600px !important;
+
+  white-space: normal !important;
+  word-wrap: break-word !important; /* Ngắt từ nếu dài quá */
+  overflow-wrap: break-word !important;
+
+  &::-webkit-scrollbar {
+    height: 5px; /* Đặt chiều cao thanh scroll */
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Màu nền của track */
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #9ea7f0; /* Màu của thanh scroll */
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #6c7ae0; /* Màu khi hover */
+  }
+}
+

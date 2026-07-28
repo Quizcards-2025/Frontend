@@ -1,0 +1,19 @@
+//{
+//  "compilerOptions": {
+//    // other options...
+//    "esModuleInterop": true,
+//    "jsx": "react"
+//  }
+//}
+{
+  "compilerOptions": {
+    // other options...
+    "esModuleInterop": true,
+    "jsx": "react",
+    "skipLibCheck": true,
+    "allowJs": true
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

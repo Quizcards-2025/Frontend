@@ -1,0 +1,289 @@
+    .goodbyeContainer {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #1C1D1F;
+        padding: 20px;
+    }
+
+    .goodbyePaper {
+        padding: 40px;
+        text-align: center;
+        border-radius: 20px !important;
+        background: #1C1D1F !important;
+        color: white !important;
+    }
+
+    .goodbyeContent {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .waveEmoji {
+        font-size: 64px;
+        animation: wave 2s infinite;
+        transform-origin: 70% 70%;
+    }
+
+    @keyframes wave {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        10% {
+            transform: rotate(14deg);
+        }
+
+        20% {
+            transform: rotate(-8deg);
+        }
+
+        30% {
+            transform: rotate(14deg);
+        }
+
+        40% {
+            transform: rotate(-4deg);
+        }
+
+        50% {
+            transform: rotate(10deg);
+        }
+
+        60% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(0deg);
+        }
+    }
+
+    .goodbyeTitle {
+        color: #fff;
+        font-weight: 700 !important;
+        margin-bottom: 8px !important;
+    }
+
+    .goodbyeMessage {
+        color: #B0B0B0;
+        max-width: 80%;
+        line-height: 1.6 !important;
+    }
+
+    .statsContainer {
+        display: flex;
+        justify-content: space-around;
+        width: 100%;
+        margin: 20px 0;
+        padding: 20px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .statItem {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .statItem h4 {
+        color: #4CAF50;
+        font-weight: 600 !important;
+    }
+
+    .statItem p {
+        color: #B0B0B0;
+    }
+
+    /* Download Section Styles */
+    .downloadSection {
+        width: 100%;
+        padding: 32px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .downloadTitle {
+        color: #fff;
+        font-weight: 700 !important;
+        font-size: 2.5rem !important;
+        text-align: center;
+        margin-bottom: 32px !important;
+    }
+
+    .downloadButtons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin: 24px 0;
+    }
+
+    .iosButton,
+    .androidButton {
+        padding: 12px 32px !important;
+        font-size: 1.1rem !important;
+        border-radius: 24px !important;
+    }
+
+    .iosButton {
+        background-color: #f8f9fa !important;
+        color: #1C1D1F !important;
+    }
+
+    .androidButton {
+        background-color: #4CAF50 !important;
+        color: white !important;
+    }
+
+    .qrSection {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 48px;
+        margin: 32px 0;
+    }
+
+    .qrCode {
+        width: 200px;
+        height: 200px;
+        background: white;
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .mascotPlaceholder {
+        width: 200px;
+        height: 200px;
+        background-color: #4CAF50;
+        border-radius: 50%;
+    }
+
+    .features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin: 48px 0;
+    }
+
+    .featureItem {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        padding: 24px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+    }
+
+    .featureIcon {
+        font-size: 48px !important;
+        color: #4CAF50;
+    }
+
+    .buttonsContainer {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .loginButton {
+        background-color: #4CAF50 !important;
+        padding: 10px 24px !important;
+        text-transform: none !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .loginButton:hover {
+        background-color: #388E3C !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2) !important;
+    }
+
+    .homeButton {
+        border-color: #4CAF50 !important;
+        color: #4CAF50 !important;
+        padding: 10px 24px !important;
+        text-transform: none !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .homeButton:hover {
+        background-color: rgba(76, 175, 80, 0.05) !important;
+        transform: translateY(-2px);
+    }
+
+    .footerText {
+        color: #B0B0B0;
+        margin-top: 16px !important;
+    }
+
+    .link {
+        color: #4CAF50;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .link:hover {
+        color: #66BB6A;
+        text-decoration: underline;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .goodbyePaper {
+            padding: 24px;
+        }
+
+        .goodbyeTitle {
+            font-size: 2rem !important;
+        }
+
+        .statsContainer {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .features {
+            grid-template-columns: 1fr;
+        }
+
+        .qrSection {
+            flex-direction: column;
+        }
+
+        .downloadTitle {
+            font-size: 2rem !important;
+        }
+
+        .downloadButtons {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .iosButton,
+        .androidButton {
+            width: 100%;
+        }
+
+        .buttonsContainer {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .loginButton,
+        .homeButton {
+            width: 100%;
+        }
+
+        .goodbyeMessage {
+            max-width: 100%;
+        }
+    }

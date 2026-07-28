@@ -1,0 +1,172 @@
+/* HomePage.css */
+
+.container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.title {
+    font-size: 32px;
+}
+
+.topic {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+
+.topic-box {
+    display: flex;
+    align-items: center;
+    background-color: #e0e0fe;
+    width: fit-content;
+    height: 40px;
+    border-radius: 15px;
+    padding: 0px 10px;
+}
+
+.flashcard-container {
+    margin: 20px 0px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: fit-content;
+
+}
+
+/*.button-container {*/
+/*    display: flex;*/
+/*    justify-content: space-between;*/
+/*    width: 100%;*/
+/*    height: 80px;*/
+
+/*    gap: 20px;*/
+/*}*/
+.button-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
+    width: 100%;
+}
+
+/* Sử dụng grid-auto-placement để điều chỉnh kích thước của các phần tử */
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 15px;
+    background-color: white;
+    width: 100%;
+    gap: 20px;
+    cursor: pointer;
+    grid-column: auto / span 2;
+}
+
+/* Xử lý trường hợp chỉ có 1 phần tử trong hàng cuối */
+.button-container > .button:last-child:nth-child(3n+1) {
+    grid-column: span 6;
+}
+
+.button-container > .button:last-child:nth-child(3n+2),
+.button-container > .button:nth-last-child(2):nth-child(3n+1) {
+    grid-column: span 3;
+}
+
+.button-border-light {
+    border: 2px solid #e0e0fe;
+    border-bottom: 4px solid #e0e0fe;
+}
+
+.button-border-dark {
+    border: 2px solid #0c0f6e;
+    border-bottom: 4px solid #0c0f6e;
+}
+
+.button-container .button:hover {
+    background-color: #eaf1f9;
+    color: #0c0f6e;
+}
+
+/*!* Responsive adjustments *!*/
+@media (max-width: 768px) {
+    .button-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .button,
+    .button-container > .button:last-child:nth-child(3n+1),
+    .button-container > .button:last-child:nth-child(3n+2),
+    .button-container > .button:nth-last-child(2):nth-child(3n+1) {
+        grid-column: auto / span 1;
+    }
+
+    .button-container > .button:last-child:nth-child(2n+1) {
+        grid-column: auto / span 2;
+    }
+}
+
+@media (max-width: 480px) {
+    .button-container {
+        grid-template-columns: 1fr;
+    }
+
+    .button {
+        grid-column: 1 / -1 !important; /* Tất cả các button chiếm toàn bộ chiều rộng */
+    }
+}
+
+.avatar-container {
+    width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    padding: 10px 20px;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    object-fit: cover;
+}
+
+.user-info {
+    display: grid;
+    flex-direction: row;
+    margin-left: 20px;
+}
+
+.separator {
+    width: 100%;
+}
+
+.terms-header {
+    width: 100%;
+    padding: 10px;
+}
+
+.hot-terms {
+    display: flex;
+    width: 100%;
+    height: fit-content;
+    margin-bottom: 0px;
+}
+
+.hot-terms-icon {
+    margin-right: 20px;
+}
+
+.hot-terms-title {
+    font-size: 24px;
+}
+
+.set-card {
+    width: 100%;
+    height: fit-content;
+}
