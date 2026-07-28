@@ -1,0 +1,56 @@
+/* Sidebar container */
+.sidebar-container {
+  background-color: #EDEDFF;
+  border: 0;
+  height: 100%;
+  display: flex;
+}
+
+/* Menu button hover effect */
+.menu-button:hover {
+  background: transparent;
+  transition: 0.4s ease;
+  color: #868dfb;
+}
+
+/* IconButton styling */
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Box container styles */
+.item-container {
+  padding-left: 5%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Box item styling */
+.box-item {
+  background-color: var(--primary-color); /* Replace with your theme variable */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  border-top: 2px solid #e0e0fe;
+  border-right: 2px solid #e0e0fe;
+  border-left: 2px solid #e0e0fe;
+  border-bottom: 4px solid #e0e0fe;
+}
+
+
+.deadline-container {
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 10px;
+}

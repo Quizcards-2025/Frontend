@@ -1,0 +1,10 @@
+.edit-folder:hover {
+    color: coral;
+}
+
+.remove-folder:hover {
+    color: red;
+}
+.edit-plus:hover{
+    color:#0e22e9;
+}

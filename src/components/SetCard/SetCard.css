@@ -1,0 +1,77 @@
+.set{
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    min-width: 300px;
+    height: fit-content;
+    border-radius: 15px;
+    border-top: 2px solid #e0e0fe;
+    border-left: 2px solid #e0e0fe;
+    border-bottom: 4px solid #e0e0fe;
+    border-right: 2px solid #e0e0fe;
+    padding:15px;
+
+}
+.set-title {
+    font-size: 20px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.set-terms{
+    display: flex;
+    justify-content: center;
+    background-color: #E0E0FE;
+    width: fit-content;
+    height: fit-content;
+    border-radius: 15px;
+    padding: 3px 10px;
+    font-size: 15px;
+    margin-top: 5px;
+}
+.set-user-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-top: 50px;
+}
+
+.set-user-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.set-user-info span {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.set-user-interaction {
+    display: flex;
+    justify-content:center;
+    align-items: center;
+    gap:10px;
+    background-color: black;
+    border-radius: 10px;
+    padding: 1px 10px;
+    width: fit-content;
+    margin-top: 10px;
+    font-size: 14px;
+    color: white;
+}
+
+.set-user-interaction svg {
+    width: 24px;
+    height: 24px;
+    fill: #fff;
+    transition: transform 0.3s ease;
+    margin-right: 8px;
+}
+
+.set-user-interaction:hover svg {
+    transform: scale(1.2);
+}

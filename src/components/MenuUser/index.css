@@ -1,0 +1,91 @@
+
+.user-menu-container {
+    background: linear-gradient(135deg, #ffffff, #f7f9fc);
+    max-width: 320px;
+    position: absolute;
+    top: 60px;
+    right: 40px;
+    z-index: 1000;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.user-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.user-avatar {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #d1d1d1;
+    transition: border-color 0.3s;
+}
+
+
+.user-avatar:hover {
+    border-color: #9ab2d5;
+}
+
+.default-avatar-icon {
+    color: #a3a3a3;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.user-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+    letter-spacing: 0.5px;
+}
+
+.user-email {
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.user-menu-options {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.menu-option {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    background-color: #f5f7fa;
+    border-radius: 12px;
+    padding: 10px 20px;
+    gap: 40px
+}
+
+.menu-option:hover {
+    background-color: #eaf1f9;
+}
+
+
+.menu-option:hover .icon-user-menu {
+    color: #0c0f6e;
+}
+
+.menu-option div {
+    font-size: 16px;
+    font-weight: 300;
+    color: #34495e;
+}
